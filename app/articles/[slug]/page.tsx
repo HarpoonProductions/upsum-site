@@ -1,36 +1,38 @@
 import { sanity } from '@/lib/sanity'
 import groq from 'groq'
+import { Metadata } from 'next'
 
-type Article = {
-  _id: string
-  title: string
-  body: any
-  publishedAt: string
+// Types
+type Props = {
+  params: { slug: string }
 }
 
-export async function generateStaticParams() {
-  const query = groq`*[_type == "article" && defined(slug.current)][]{
-    "slug": slug.current
-  }`
-  const slugs = await sanity.fetch(query)
-  return slugs.map((slug: { slug: string }) => ({ slug: slug.slug }))
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const article = await sanity.fetch(
+    groq`*[_type == "article" && slug.current == $slug][0]{
+      title, slug, excerpt
+    }`,
+    { slug: params.slug }
+  )
+
+  return {
+    title: article?.title || 'Article',
+    description: article?.excerpt || 'An article on Upsum.',
+  }
 }
 
-export default async function ArticlePage({ params }: { params: { slug: string } }) {
-  const query = groq`*[_type == "article" && slug.current == $slug][0]{
-    _id,
-    title,
-    body,
-    publishedAt
-  }`
-
-  const article: Article = await sanity.fetch(query, { slug: params.slug })
+export default async function ArticleDetailPage({ params }: Props) {
+  const article = await sanity.fetch(
+    groq`*[_type == "article" && slug.current == $slug][0]{
+      title, slug, body
+    }`,
+    { slug: params.slug }
+  )
 
   return (
-    <article className="p-8">
+    <main className="max-w-2xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">{article.title}</h1>
-      <p className="text-sm text-gray-500 mb-6">{new Date(article.publishedAt).toDateString()}</p>
-      <div>{JSON.stringify(article.body)}</div>
-    </article>
+      <div className="prose prose-lg" dangerouslySetInnerHTML={{ __html: article.body }} />
+    </main>
   )
 }
