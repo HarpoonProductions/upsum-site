@@ -1,35 +1,41 @@
-import { sanity } from '@/lib/sanity'
-import groq from 'groq'
-import { notFound } from 'next/navigation'
-import { Metadata } from 'next'
+// app/faqs/[slug]/page.tsx
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  return {
-    title: `FAQ: ${params.slug}`,
-  }
+// This interface defines the expected props for your page component.
+// Next.js App Router passes 'params' directly for dynamic routes.
+interface FaqPageProps {
+  params: {
+    slug: string;
+  };
+  // If you were using `searchParams` from the URL, you'd add them here too:
+  // searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const query = groq`*[_type == "faq" && slug.current == $slug][0]{
-    _id,
-    question,
-    answer,
-    publishedAt
-  }`
+export default async function FaqPage({ params }: FaqPageProps) {
+  const { slug } = params;
 
-  const faq = await sanity.fetch(query, { slug: params.slug })
+  // Your existing data fetching logic for Sanity
+  // Example (assuming you have a Sanity client setup):
+  // import { client } from '@/lib/sanity'; // Adjust path as needed
+  // import { groq } from 'next-sanity';
 
-  if (!faq) {
-    notFound()
-  }
+  // const query = groq`*[_type == "faq" && slug.current == $slug][0]{
+  //   _id,
+  //   question,
+  //   answer,
+  //   // ... other fields
+  // }`;
+  // const faq = await client.fetch(query, { slug });
+
+  // if (!faq) {
+  //   return <div>FAQ not found</div>;
+  // }
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-4">{faq.question}</h1>
-      <p className="text-sm text-gray-500 mb-4">
-        {new Date(faq.publishedAt).toLocaleDateString()}
-      </p>
-      <div>{/* TODO: render PortableText */}</div>
-    </main>
-  )
+    <div>
+      {/* <h1>{faq.question}</h1> */}
+      {/* <p>{faq.answer}</p> */}
+      <h1>FAQ Slug: {slug}</h1> {/* Temporarily display slug to confirm it's working */}
+      {/* Render your FAQ content here */}
+    </div>
+  );
 }
