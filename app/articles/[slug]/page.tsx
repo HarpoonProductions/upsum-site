@@ -9,13 +9,11 @@ type Article = {
   publishedAt: string
 }
 
-type Props = {
-  params: {
-    slug: string
-  }
-}
-
-export default async function Page({ params }: Props) {
+export default async function Page({
+  params,
+}: {
+  params: { slug: string }
+}) {
   const query = groq`*[_type == "article" && slug.current == $slug][0]{
     _id,
     title,
