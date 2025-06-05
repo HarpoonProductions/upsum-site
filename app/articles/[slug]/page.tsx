@@ -1,19 +1,10 @@
-import { sanity } from '@/lib/sanity'
-import groq from 'groq'
-import { notFound } from 'next/navigation'
-
-type Article = {
-  _id: string
-  title: string
-  body: any
-  publishedAt: string
+type Props = {
+  params: {
+    slug: string
+  }
 }
 
-export default async function ArticlePage({
-  params,
-}: {
-  params: { slug: string }
-}) {
+export default async function ArticlePage({ params }: Props) {
   const query = groq`*[_type == "article" && slug.current == $slug][0]{
     _id,
     title,
