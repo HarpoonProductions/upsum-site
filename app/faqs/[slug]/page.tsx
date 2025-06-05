@@ -3,15 +3,15 @@
 // This interface defines the expected props for your page component.
 // Next.js App Router passes 'params' directly for dynamic routes.
 interface FaqPageProps {
-  params: {
-    slug: string;
+  params: Promise<{
+    slug: string }>;
   };
   // If you were using `searchParams` from the URL, you'd add them here too:
   // searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export default async function FaqPage({ params }: FaqPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   // Your existing data fetching logic for Sanity
   // Example (assuming you have a Sanity client setup):
