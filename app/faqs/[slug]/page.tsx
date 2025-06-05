@@ -8,7 +8,6 @@ interface FaqPageProps {
   };
   // If you were using `searchParams` from the URL, you'd add them here too:
   // searchParams?: { [key: string]: string | string[] | undefined };
-}
 
 export default async function FaqPage({ params }: FaqPageProps) {
   const { slug } = await params;
