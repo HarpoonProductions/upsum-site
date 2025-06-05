@@ -1,10 +1,21 @@
+import { type Metadata } from 'next'
+import { sanity } from '@/lib/sanity'
+import groq from 'groq'
+import { notFound } from 'next/navigation'
+
 type Props = {
   params: {
     slug: string
   }
 }
 
-export default async function ArticlePage({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return {
+    title: `Article: ${params.slug}`,
+  }
+}
+
+export default async function Page({ params }: Props) {
   const query = groq`*[_type == "article" && slug.current == $slug][0]{
     _id,
     title,
@@ -12,7 +23,7 @@ export default async function ArticlePage({ params }: Props) {
     publishedAt
   }`
 
-  const article: Article | null = await sanity.fetch(query, { slug: params.slug })
+  const article = await sanity.fetch(query, { slug: params.slug })
 
   if (!article) {
     notFound()
