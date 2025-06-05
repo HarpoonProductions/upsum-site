@@ -38,4 +38,11 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <main className="p-8">
-      <h1 className="text-2xl font-bold mb
+      <h1 className="text-2xl font-bold mb-4">{faq.question}</h1>
+      <p className="text-sm text-gray-500 mb-4">
+        {new Date(faq.publishedAt).toLocaleDateString()}
+      </p>
+      <div>{/* TODO: render PortableText answer */}</div>
+    </main>
+  )
+}
