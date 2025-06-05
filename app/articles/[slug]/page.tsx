@@ -14,7 +14,7 @@ type Article = {
 }
 
 export default async function ArticlePage({ params }: PageProps) {
-  const query = groq`*[_type == "article" && slug.current == $slug][0] {
+  const query = groq`*[_type == "article" && slug.current == $slug][0]{
     _id,
     title,
     body,
@@ -30,10 +30,8 @@ export default async function ArticlePage({ params }: PageProps) {
   return (
     <main className="p-8">
       <h1 className="text-2xl font-bold mb-4">{article.title}</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        Published: {new Date(article.publishedAt).toLocaleDateString()}
-      </p>
-      <div>{/* Render article.body here if you have a Portable Text renderer */}</div>
+      <p className="text-gray-500 text-sm mb-4">{new Date(article.publishedAt).toLocaleDateString()}</p>
+      <div>{/* You can add PortableText rendering here later */}</div>
     </main>
   )
 }
