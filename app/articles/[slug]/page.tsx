@@ -1,42 +1,39 @@
 import { sanity } from '@/lib/sanity'
 import groq from 'groq'
-import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+
+type PageProps = {
+  params: { slug: string }
+}
 
 type Article = {
   _id: string
   title: string
-  slug: { current: string }
+  body: any
   publishedAt: string
-  body: any // Add other fields as needed
 }
 
-type PageProps = {
-  params: {
-    slug: string
-  }
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  return {
-    title: params.slug,
-  }
-}
-
-export default async function Page({ params }: PageProps) {
+export default async function ArticlePage({ params }: PageProps) {
   const query = groq`*[_type == "article" && slug.current == $slug][0] {
     _id,
     title,
-    publishedAt,
-    body
+    body,
+    publishedAt
   }`
 
-  const article: Article = await sanity.fetch(query, { slug: params.slug })
+  const article: Article | null = await sanity.fetch(query, { slug: params.slug })
+
+  if (!article) {
+    notFound()
+  }
 
   return (
     <main className="p-8">
       <h1 className="text-2xl font-bold mb-4">{article.title}</h1>
-      <p className="text-sm text-gray-600 mb-6">{new Date(article.publishedAt).toLocaleDateString()}</p>
-      <div>{/* Render body content here */}</div>
+      <p className="text-sm text-gray-500 mb-6">
+        Published: {new Date(article.publishedAt).toLocaleDateString()}
+      </p>
+      <div>{/* Render article.body here if you have a Portable Text renderer */}</div>
     </main>
   )
 }
