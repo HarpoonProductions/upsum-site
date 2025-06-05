@@ -3,26 +3,13 @@ import groq from 'groq'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 
-type FAQ = {
-  _id: string
-  question: string
-  answer: any
-  publishedAt: string
-}
-
-type PageProps = {
-  params: {
-    slug: string
-  }
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   return {
     title: `FAQ: ${params.slug}`,
   }
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params }: { params: { slug: string } }) {
   const query = groq`*[_type == "faq" && slug.current == $slug][0]{
     _id,
     question,
@@ -30,7 +17,7 @@ export default async function Page({ params }: PageProps) {
     publishedAt
   }`
 
-  const faq: FAQ | null = await sanity.fetch(query, { slug: params.slug })
+  const faq = await sanity.fetch(query, { slug: params.slug })
 
   if (!faq) {
     notFound()
@@ -42,7 +29,7 @@ export default async function Page({ params }: PageProps) {
       <p className="text-sm text-gray-500 mb-4">
         {new Date(faq.publishedAt).toLocaleDateString()}
       </p>
-      <div>{/* TODO: render PortableText answer */}</div>
+      <div>{/* TODO: render PortableText */}</div>
     </main>
   )
 }
