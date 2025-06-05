@@ -30,8 +30,10 @@ export default async function ArticlePage({
   return (
     <main className="p-8">
       <h1 className="text-2xl font-bold mb-4">{article.title}</h1>
-      <p className="text-gray-500 text-sm mb-4">{new Date(article.publishedAt).toLocaleDateString()}</p>
-      <div>{/* TODO: Render article.body with PortableText later */}</div>
+      <p className="text-sm text-gray-500 mb-4">
+        {new Date(article.publishedAt).toLocaleDateString()}
+      </p>
+      <div>{/* TODO: render PortableText */}</div>
     </main>
   )
 }
