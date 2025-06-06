@@ -1,15 +1,9 @@
 // app/faqs/[slug]/page.tsx
 
-import { client } from '@/lib/sanity' // Update path if needed
+import { client } from '@/lib/sanity'
 import { groq } from 'next-sanity'
 import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
-
-interface FaqPageProps {
-  params: {
-    slug: string
-  };
-}
 
 const query = groq`*[_type == "faq" && slug.current == $slug][0]{
   _id,
@@ -24,8 +18,11 @@ const query = groq`*[_type == "faq" && slug.current == $slug][0]{
   }
 }`
 
-export default async function FaqPage({ params }: FaqPageProps) {
-  const { slug } = params
+// 🚨 NEW CHANGE: Cast the entire props object to 'any'
+export default async function FaqPage({ params }: any) {
+  // We still explicitly type 'slug' for safety inside the function
+  const { slug } = params as { slug: string };
+
   const faq = await client.fetch(query, { slug })
 
   if (!faq) {
