@@ -1,40 +1,56 @@
 // app/faqs/[slug]/page.tsx
 
-// This interface defines the expected props for your page component.
-// Next.js App Router passes 'params' directly for dynamic routes.
+import { client } from '@/lib/sanity' // Update path if needed
+import { groq } from 'next-sanity'
+import { PortableText } from '@portabletext/react'
+import Image from 'next/image'
+
 interface FaqPageProps {
-  params: Promise<{
-    slug: string }>;
-  };
-  // If you were using `searchParams` from the URL, you'd add them here too:
-  // searchParams?: { [key: string]: string | string[] | undefined };
+  params: {
+    slug: string
+  }
+}
+
+const query = groq`*[_type == "faq" && slug.current == $slug][0]{
+  _id,
+  question,
+  answer,
+  image{
+    asset->{
+      _id,
+      url
+    },
+    alt
+  }
+}`
 
 export default async function FaqPage({ params }: FaqPageProps) {
-  const { slug } = await params;
+  const { slug } = params
+  const faq = await client.fetch(query, { slug })
 
-  // Your existing data fetching logic for Sanity
-  // Example (assuming you have a Sanity client setup):
-  // import { client } from '@/lib/sanity'; // Adjust path as needed
-  // import { groq } from 'next-sanity';
-
-  // const query = groq`*[_type == "faq" && slug.current == $slug][0]{
-  //   _id,
-  //   question,
-  //   answer,
-  //   // ... other fields
-  // }`;
-  // const faq = await client.fetch(query, { slug });
-
-  // if (!faq) {
-  //   return <div>FAQ not found</div>;
-  // }
+  if (!faq) {
+    return <div>FAQ not found</div>
+  }
 
   return (
-    <div>
-      {/* <h1>{faq.question}</h1> */}
-      {/* <p>{faq.answer}</p> */}
-      <h1>FAQ Slug: {slug}</h1> {/* Temporarily display slug to confirm it's working */}
-      {/* Render your FAQ content here */}
+    <div className="max-w-2xl mx-auto py-10 px-4">
+      <h1 className="text-2xl font-bold mb-4">{faq.question}</h1>
+
+      {faq.image?.asset?.url && (
+        <div className="mb-6">
+          <Image
+            src={faq.image.asset.url}
+            alt={faq.image.alt || faq.question}
+            width={800}
+            height={450}
+            className="rounded"
+          />
+        </div>
+      )}
+
+      <div className="prose">
+        <PortableText value={faq.answer} />
+      </div>
     </div>
-  );
+  )
 }

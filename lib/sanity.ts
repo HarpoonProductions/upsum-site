@@ -1,8 +1,8 @@
-import { createClient } from '@sanity/client'
+import { createClient } from 'next-sanity'
 
-export const sanity = createClient({
-  projectId: 'rpufi5bg', // Replace this!
+export const client = createClient({
+  projectId: 'rpufi5bg',
   dataset: 'production',
+  apiVersion: '2023-01-01',
   useCdn: true,
-  apiVersion: '2024-06-01',
 })
