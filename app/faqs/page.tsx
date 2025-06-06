@@ -1,5 +1,5 @@
 // 1. app/faqs/page.tsx – List of FAQs with structured data
-import { sanity } from '@/lib/sanity'
+import { client } from '@/lib/sanity'
 import groq from 'groq'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
 }
 
 export default async function FAQListPage() {
-  const faqs = await sanity.fetch(query)
+  const faqs = await client.fetch(query)
 
   const faqStructuredData = {
     '@context': 'https://schema.org',

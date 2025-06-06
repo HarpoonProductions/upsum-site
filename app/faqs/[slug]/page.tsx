@@ -8,7 +8,7 @@ import Image from 'next/image'
 interface FaqPageProps {
   params: {
     slug: string
-  }
+  };
 }
 
 const query = groq`*[_type == "faq" && slug.current == $slug][0]{
