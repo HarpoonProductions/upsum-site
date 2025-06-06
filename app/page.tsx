@@ -1,4 +1,4 @@
-import { sanity } from '@/lib/sanity'
+import { client } from '@/lib/sanity' // Correct import
 import groq from 'groq'
 
 type Article = {
@@ -16,7 +16,8 @@ export default async function HomePage() {
     publishedAt
   }`
 
-  const articles: Article[] = await sanity.fetch(query)
+  // 🚨 FIX IS HERE: Change 'sanity.fetch' to 'client.fetch'
+  const articles: Article[] = await client.fetch(query)
 
   return (
     <main className="p-8">
