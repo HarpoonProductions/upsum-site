@@ -25,7 +25,9 @@ export default async function HomePage() {
     <div className="bg-gray-50 min-h-screen py-8 px-4 font-sans">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {faqs.length === 0 && (
-          <p className="text-center text-red-600 font-bold col-span-full">No FAQs found.</p>
+          <p className="text-center text-red-600 font-bold col-span-full">
+            No FAQs found. Check your Sanity content.
+          </p>
         )}
         {faqs.map((faq: any) => {
           const imageUrl = faq.image?.asset?.url
@@ -49,3 +51,12 @@ export default async function HomePage() {
                   fill
                   className="rounded-lg object-cover"
                   sizes="(max-width: 768px) 100vw, 33vw"
+                />
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
