@@ -1,52 +1,51 @@
-// app/faqs/[slug]/page.tsx
-
+import groq from 'groq'
 import { client } from '@/lib/sanity'
-import { groq } from 'next-sanity'
-import { PortableText } from '@portabletext/react'
+import Link from 'next/link'
 import Image from 'next/image'
+import { urlFor } from '@/lib/sanity'
+import fallbackImage from '@/public/fallback.jpg'
 
-const query = groq`*[_type == "article"] | order(publishedAt desc)[0...10] {
-  _id,
-  title,
-  slug,
-  summary,
-  image {
-    asset-> {
-      url
+export default async function HomePage() {
+  const query = groq`*[_type == "faq" && defined(slug.current)] | order(publishedAt desc)[0...10] {
+    _id,
+    question,
+    slug,
+    publishedAt,
+    summary,
+    image {
+      asset -> {
+        url
+      }
     }
-  }
-}`
+  }`
 
-// 🚨 NEW CHANGE: Cast the entire props object to 'any'
-export default async function FaqPage({ params }: any) {
-  // We still explicitly type 'slug' for safety inside the function
-  const { slug } = params as { slug: string };
-
-  const faq = await client.fetch(query, { slug })
-
-  if (!faq) {
-    return <div>FAQ not found</div>
-  }
+  const faqs = await client.fetch(query)
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-4">
-      <h1 className="text-2xl font-bold mb-4">{faq.question}</h1>
+    <div className="bg-gray-50 min-h-screen py-8 px-4 font-sans">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {faqs.length === 0 && (
+          <p className="text-center text-red-600 font-bold col-span-full">No FAQs found.</p>
+        )}
+        {faqs.map((faq: any) => {
+          const imageUrl = faq.image?.asset?.url
+            ? urlFor(faq.image).width(400).height(250).fit('crop').url()
+            : fallbackImage
 
-      {faq.image?.asset?.url && (
-        <div className="mb-6">
-          <Image
-            src={faq.image.asset.url}
-            alt={faq.image.alt || faq.question}
-            width={800}
-            height={450}
-            className="rounded"
-          />
-        </div>
-      )}
-
-      <div className="prose">
-        <PortableText value={faq.answer} />
-      </div>
-    </div>
-  )
-}
+          return (
+            <Link
+              href={`/faqs/${faq.slug.current}`}
+              key={faq._id}
+              className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col"
+            >
+              <h2 className="text-xl font-semibold mb-2 text-gray-800">{faq.question}</h2>
+              {faq.summary && (
+                <p className="text-gray-600 text-sm mb-3 line-clamp-4">{faq.summary}</p>
+              )}
+              <div className="relative w-full h-48 mt-auto">
+                <Image
+                  src={imageUrl}
+                  alt={faq.question}
+                  fill
+                  className="rounded-lg object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
