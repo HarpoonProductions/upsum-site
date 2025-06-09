@@ -24,46 +24,46 @@ export default async function HomePage() {
   const faqs = await client.fetch(query)
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8 px-4 font-sans">
-      <h1 className="text-3xl font-bold text-center mb-10">Upsum FAQs</h1>
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {faqs.length === 0 && (
-          <p className="text-center text-red-600 font-bold col-span-full">
-            No FAQs found.
-          </p>
-        )}
+  <div className="bg-gray-100 min-h-screen py-8 px-4 font-sans">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {faqs.length === 0 && (
+        <p className="text-center text-red-600 font-bold col-span-full">
+          No FAQs found.
+        </p>
+      )}
 
-        {faqs.map((faq: any) => {
-          const imageUrl = faq.image?.asset?.url
-            ? urlFor(faq.image).width(400).height(250).fit('crop').url()
-            : fallbackImage
+      {faqs.map((faq: any) => {
+        const imageUrl = faq.image?.asset?.url
+          ? urlFor(faq.image).width(400).height(250).fit('crop').url()
+          : fallbackImage
 
-          return (
-            <div
-              key={faq._id}
-              className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col"
-            >
-              <Link href={`/faqs/${faq.slug.current}`}>
-                <Image
-                  src={imageUrl}
-                  alt={faq.question}
-                  width={400}
-                  height={250}
-                  className="rounded-lg object-cover mb-3"
-                />
-              </Link>
-              <Link href={`/faqs/${faq.slug.current}`}>
-                <h2 className="text-xl font-semibold text-gray-800 hover:underline">
-                  {faq.question}
-                </h2>
-              </Link>
-              {faq.summaryForAI && (
-                <p className="text-gray-600 text-sm mt-2 line-clamp-4">{faq.summaryForAI}</p>
-              )}
+        return (
+          <Link
+            key={faq._id}
+            href={`/faqs/${faq.slug.current}`}
+            className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all flex flex-col"
+          >
+            <h2 className="text-xl font-semibold mb-2 text-gray-800">
+              {faq.question}
+            </h2>
+            {faq.summaryForAI && (
+              <p className="text-gray-600 text-sm mb-3 line-clamp-4">
+                {faq.summaryForAI}
+              </p>
+            )}
+            <div className="relative w-full h-48 mt-auto">
+              <Image
+                src={imageUrl}
+                alt={faq.question}
+                fill
+                className="rounded-lg object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
             </div>
-          )
-        })}
-      </div>
+          </Link>
+        )
+      })}
     </div>
-  )
+  </div>
+)
 }
