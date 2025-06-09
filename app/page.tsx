@@ -5,9 +5,7 @@ import Link from 'next/link'
 import { urlFor } from '@/lib/sanityImage' // Adjust path as needed
 import Head from 'next/head'
 
-<Head>
-  <meta name="robots" content="noindex, nofollow" />
-</Head>
+
 
 const query = groq`
   *[_type == "faq"] | order(publishedAt desc)[0...6] {

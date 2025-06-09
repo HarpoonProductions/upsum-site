@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { urlFor } from '@/lib/sanity'
-import fallbackImage from '@/public/fallback.jpg' // <-- Add a fallback image to /public
+import fallbackImage from '@/public/fallback.jpg' // Add this image if not already
 
 type Article = {
   _id: string
@@ -37,7 +37,6 @@ export default function ArticleList({ articles }: { articles: Article[] }) {
                 fill
                 className="object-cover rounded"
                 sizes="96px"
-                priority={false}
               />
             </div>
             <div>
