@@ -21,11 +21,11 @@ export default async function HomePage() {
       }
     }
   `
-
   const faqs = await client.fetch(query)
 
   return (
     <div className="bg-gray-50 min-h-screen py-8 px-4 font-sans">
+      <h1 className="text-3xl font-bold text-center mb-10">Upsum FAQs</h1>
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {faqs.length === 0 && (
           <p className="text-center text-red-600 font-bold col-span-full">
@@ -39,29 +39,28 @@ export default async function HomePage() {
             : fallbackImage
 
           return (
-            <Link
+            <div
               key={faq._id}
-              href={`/faqs/${faq.slug.current}`}
               className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col"
             >
-              <h2 className="text-xl font-semibold mb-2 text-gray-800">
-                {faq.question}
-              </h2>
+              <Link href={`/faqs/${faq.slug.current}`}>
+                <Image
+                  src={imageUrl}
+                  alt={faq.question}
+                  width={400}
+                  height={250}
+                  className="rounded-lg object-cover mb-3"
+                />
+              </Link>
+              <Link href={`/faqs/${faq.slug.current}`}>
+                <h2 className="text-xl font-semibold text-gray-800 hover:underline">
+                  {faq.question}
+                </h2>
+              </Link>
               {faq.summaryForAI && (
-                <p className="text-gray-600 text-sm mb-3 line-clamp-4">
-                  {faq.summaryForAI}
-                </p>
+                <p className="text-gray-600 text-sm mt-2 line-clamp-4">{faq.summaryForAI}</p>
               )}
-              <div className="w-full h-auto mt-auto">
-  <Image
-    src={imageUrl}
-    alt={faq.question}
-    width={400}
-    height={250}
-    className="rounded-lg object-cover w-full"
-  />
-</div>
-            </Link>
+            </div>
           )
         })}
       </div>
