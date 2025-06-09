@@ -52,15 +52,15 @@ export default async function HomePage() {
                   {faq.summaryForAI}
                 </p>
               )}
-              <div className="relative w-full h-48 mt-auto">
-                <Image
-                  src={imageUrl}
-                  alt={faq.question}
-                  fill
-                  className="rounded-lg object-cover"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-              </div>
+              <div className="w-full h-auto mt-auto">
+  <Image
+    src={imageUrl}
+    alt={faq.question}
+    width={400}
+    height={250}
+    className="rounded-lg object-cover w-full"
+  />
+</div>
             </Link>
           )
         })}
