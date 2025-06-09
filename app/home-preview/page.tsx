@@ -2,6 +2,7 @@ import { client } from '@/lib/sanity'
 import groq from 'groq'
 import Image from 'next/image'
 import Link from 'next/link'
+import { urlFor } from '@/lib/sanityImage' // Adjust path as needed
 
 const query = groq`
   *[_type == "faq"] | order(publishedAt desc)[0...6] {
@@ -11,7 +12,9 @@ const query = groq`
     publishedAt,
     image {
       asset->{
-        url
+         _id,
+      url,
+      metadata { lqip } // optional for image preview
       }
     }
   }
@@ -37,12 +40,12 @@ export default async function HomePreviewPage() {
               </Link>
               {faq.image?.asset?.url && (
                 <Image
-                  src={faq.image.asset.url}
-                  alt={faq.question}
-                  width={600}
-                  height={340}
-                  className="rounded mt-2"
-                />
+                    src={urlFor(faq.image).url()}
+                    alt={faq.title}
+                    width={600}
+                    height={400}
+                    className="rounded"
+/>
               )}
               <p className="text-sm text-gray-500">
                 Published {new Date(faq.publishedAt).toLocaleDateString()}
