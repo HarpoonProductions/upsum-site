@@ -5,16 +5,15 @@ import { groq } from 'next-sanity'
 import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
 
-const query = groq`*[_type == "faq" && slug.current == $slug][0]{
+const query = groq`*[_type == "article"] | order(publishedAt desc)[0...10] {
   _id,
-  question,
-  answer,
-  image{
-    asset->{
-      _id,
+  title,
+  slug,
+  summary,
+  image {
+    asset-> {
       url
-    },
-    alt
+    }
   }
 }`
 
