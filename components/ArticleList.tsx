@@ -3,21 +3,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { urlFor } from '@/lib/sanity'
-import fallbackImage from '@/public/fallback.jpg' // Add this image if not already
+import fallbackImage from '@/public/fallback.jpg'
 
-type Article = {
-  _id: string
-  title: string
-  slug: { current: string }
-  publishedAt: string
-  image?: {
-    asset: {
-      url: string
-    }
-  }
-}
-
-export default function ArticleList({ articles }: { articles: Article[] }) {
+export default function ArticleList({ articles }: { articles: any[] }) {
   return (
     <ul className="space-y-4">
       {articles.map((article) => (
