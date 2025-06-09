@@ -11,7 +11,7 @@ export default async function HomePage() {
     question,
     slug,
     publishedAt,
-    summary,
+    summaryForAI,
     image {
       asset -> {
         url
@@ -41,22 +41,16 @@ export default async function HomePage() {
               className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col"
             >
               <h2 className="text-xl font-semibold mb-2 text-gray-800">{faq.question}</h2>
-              {faq.summary && (
-                <p className="text-gray-600 text-sm mb-3 line-clamp-4">{faq.summary}</p>
+              {faq.summaryForAI && (
+                <p className="text-gray-600 text-sm mb-3 line-clamp-4">{faq.summaryForAI}</p>
               )}
-              <div className="relative w-full h-48 mt-auto">
+              <div className="w-full h-48 mt-auto relative overflow-hidden rounded-lg">
                 <Image
                   src={imageUrl}
                   alt={faq.question}
-                  fill
-                  className="rounded-lg object-cover"
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
               </div>
-            </Link>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
