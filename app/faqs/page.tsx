@@ -1,101 +1,57 @@
-// 1. app/faqs/page.tsx – List of FAQs with structured data
-import { client } from '@/lib/sanity'
 import groq from 'groq'
-import Image from 'next/image'
+import { client } from '@/lib/sanity'
 import Link from 'next/link'
-import { Metadata } from 'next'
-import Script from 'next/script'
+import Image from 'next/image'
+import { urlFor } from '@/lib/sanity'
+import fallbackImage from '@/public/fallback.jpg'
 
-export const revalidate = 60 // ISR every 60s
-
-const query = groq`
-  *[_type == "faq"] | order(publishedAt desc)[0...20] {
+export default async function HomePage() {
+  const query = groq`*[_type == "article" && defined(slug.current)] | order(publishedAt desc)[0...10] {
     _id,
     title,
     slug,
     publishedAt,
-    author->{name},
-    category->{title},
-    image
-  }
-`
-
-export const metadata: Metadata = {
-  title: 'FAQs | Upsum',
-  description: 'Credible answers to common questions from the Upsum project.',
-  keywords: ['FAQs', 'Upsum', 'questions', 'answers', 'explainers'],
-  openGraph: {
-    title: 'FAQs | Upsum',
-    description: 'Credible answers to common questions from the Upsum project.',
-    url: 'https://upsum.vercel.app/faqs',
-    siteName: 'Upsum',
-    type: 'website',
-    images: [
-      {
-        url: 'https://upsum.vercel.app/opengraph-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Upsum Logo'
+    summary,
+    image {
+      asset -> {
+        url
       }
-    ]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'FAQs | Upsum',
-    description: 'Credible answers to common questions from the Upsum project.',
-    site: '@upsumHQ',
-    creator: '@upsumHQ'
-  },
-  alternates: {
-    canonical: 'https://upsum.vercel.app/faqs'
-  }
-}
+    }
+  }`
 
-export default async function FAQListPage() {
-  const faqs = await client.fetch(query)
-
-  const faqStructuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    'mainEntity': faqs.map((faq: any) => ({
-      '@type': 'Question',
-      'name': faq.title,
-      'url': `https://upsum.vercel.app/faqs/${faq.slug.current}`,
-      'datePublished': faq.publishedAt,
-      'author': faq.author?.name ? { '@type': 'Person', 'name': faq.author.name } : undefined
-    }))
-  }
+  const articles = await client.fetch(query)
 
   return (
-    <main className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">FAQs</h1>
-      <ul className="space-y-6">
-        {faqs.map((faq: any) => (
-          <li key={faq._id}>
-            <Link href={`/faqs/${faq.slug.current}`}>
-              <h2 className="text-xl font-semibold hover:underline">{faq.title}</h2>
+    <div className="bg-gray-50 min-h-screen py-8 px-4">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {articles.map((article: any) => {
+          const imageUrl = article.image?.asset?.url
+            ? urlFor(article.image).width(400).height(250).fit('crop').url()
+            : fallbackImage
+
+          return (
+            <Link
+              href={`/articles/${article.slug.current}`}
+              key={article._id}
+              className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all p-4 flex flex-col"
+            >
+              <h2 className="text-xl font-semibold mb-2 text-gray-800">{article.title}</h2>
+              {article.summary && (
+                <p className="text-gray-600 text-sm mb-3 line-clamp-4">{article.summary}</p>
+              )}
+              <div className="relative w-full h-48 mt-auto">
+                <Image
+                  src={imageUrl}
+                  alt={article.title}
+                  fill
+                  className="rounded-lg object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+              </div>
             </Link>
-            <p className="text-sm text-gray-500">
-              {faq.category?.title} | {faq.author?.name} | {new Date(faq.publishedAt).toLocaleDateString()}
-            </p>
-            {faq.image && (
-              <Image
-                src={faq.image.asset.url}
-                alt={faq.title}
-                width={600}
-                height={400}
-                className="rounded mt-2"
-              />
-            )}
-          </li>
-        ))}
-      </ul>
-      <Script
-        id="faq-structured-data"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
-      />
-    </main>
+          )
+        })}
+      </div>
+    </div>
   )
 }
-
