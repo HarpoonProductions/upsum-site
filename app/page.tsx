@@ -1,9 +1,11 @@
+import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { client } from '@/lib/sanity'
 import { urlFor } from '@/lib/sanityImage'
-import fallbackImage from '@/public/fallback.jpg'
 import groq from 'groq'
+
+const fallbackImage = '/fallback.jpg' // Ensure you have this in your /public folder
 
 export default async function HomePage() {
   const query = groq`
@@ -20,6 +22,7 @@ export default async function HomePage() {
       }
     }
   `
+
   const faqs = await client.fetch(query)
 
   return (
@@ -39,4 +42,22 @@ export default async function HomePage() {
             >
               <div className="w-full h-48 relative mb-4">
                 <Image
-                  sr
+                  src={
+                    faq.image?.asset?.url
+                      ? urlFor(faq.image).width(800).height(400).url()
+                      : fallbackImage
+                  }
+                  alt={faq.question}
+                  fill
+                  className="object-cover rounded"
+                />
+              </div>
+              <h2 className="text-xl font-semibold mb-2">{faq.question}</h2>
+              <p className="text-sm text-gray-700">{faq.summaryForAI}</p>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
