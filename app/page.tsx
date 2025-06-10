@@ -1,80 +1,78 @@
-// app/page.tsx
-import Image from 'next/image'
-import Link from 'next/link'
-import { client } from '@/lib/sanity'
-import { urlFor } from '@/lib/sanityImage'
-import fallbackImage from '@/public/fallback.jpg'
-import groq from 'groq'
+// pages/index.js (or wherever your homepage component is located)
 
-export default async function HomePage() {
-  const query = groq`
-    *[_type == "faq"] | order(publishedAt desc)[0...6] {
-      _id,
-      question,
-      slug,
-      summaryForAI,
-      image {
-        asset->{
-          _id,
-          url
-        }
-      }
-    }
-  `
+import Head from 'next/head';
+import Link from 'next/link';
+import { client } from '../lib/sanity'; // Adjust this path if your Sanity client is elsewhere
 
-  const faqs = await client.fetch(query)
+// Sanity query to fetch all published FAQs
+const faqQuery = `*[_type == "faq" && defined(slug.current)] | order(_createdAt asc) {
+  _id,
+  question,
+  answer,
+  slug,
+}`;
 
+export default function Home({ faqs }) {
   return (
-    <div className="bg-gray-100 min-h-screen py-8 px-4 font-sans">
-      <header className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-gray-800">UPSUM</h1>
-        <p className="text-gray-500 mt-2">
-          Unpacking complex topics, one FAQ at a time
-        </p>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      <Head>
+        <title>Upsum Project - Simple Answers</title>
+        <meta name="description" content="Simple answers for the modern internet." />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {faqs.length === 0 && (
-          <p className="text-center text-red-600 font-bold col-span-full">
-            No FAQs found.
-          </p>
-        )}
+      {/* Main content area with full-width grey background */}
+      <main className="flex-grow bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 w-full">
+        <div className="max-w-4xl mx-auto"> {/* Max width for content within the grey background */}
+          <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-12">
+            Frequently Asked Questions
+          </h1>
 
-        {faqs.map((faq: any) => {
-          const imageUrl = faq.image?.asset?.url
-            ? urlFor(faq.image).width(400).height(250).fit('crop').url()
-            : fallbackImage
-
-          return (
-            <Link
-              key={faq._id}
-              href={`/faqs/${faq.slug.current}`}
-              className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all flex flex-col"
-            >
-              <h2 className="text-xl font-semibold mb-2 text-gray-800">
-                {faq.question}
-              </h2>
-              {faq.summaryForAI && (
-                <p className="text-gray-600 text-sm mb-3 line-clamp-4">
-                  {faq.summaryForAI}
+          <div className="space-y-8">
+            {faqs.map((faq) => (
+              <div key={faq._id} className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-3">
+                  <Link href={`/faq/${faq.slug.current}`} className="hover:text-blue-600 transition-colors duration-200">
+                    {faq.question}
+                  </Link>
+                </h2>
+                <p className="text-gray-600 leading-relaxed">
+                  {/* You might want to truncate the answer here or show a summary */}
+                  {faq.answer.length > 150 ? `${faq.answer.substring(0, 150)}...` : faq.answer}
                 </p>
-              )}
-              <div className="relative w-full h-48 mb-4">
-                <Image
-                  src={imageUrl}
-                  alt={faq.question}
-                  fill
-                  className="rounded-lg object-cover"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
+                {faq.answer.length > 150 && (
+                  <Link href={`/faq/${faq.slug.current}`} className="text-blue-500 hover:text-blue-600 font-medium mt-2 inline-block">
+                    Read more
+                  </Link>
+                )}
               </div>
-              <span className="mt-auto text-sm text-blue-600 font-medium hover:underline">
-                Read full FAQ →
-              </span>
-            </Link>
-          )
-        })}
-      </div>
+            ))}
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-8 px-4 sm:px-6 lg:px-8 w-full">
+        <div className="max-w-4xl mx-auto text-center text-sm">
+          <p>
+            This website is part of the Upsum project, which aims to provide simple answers for the modern internet where search and AI makes stuff up that it doesn&apos;t know. It&apos;s brought to you by Harpoon Productions. To learn more about our project, go to{' '}
+            <a href="https://Upsum.News" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+              Upsum.News
+            </a>
+            . Upsum is a trademark of Harpoon Productions Ltd.
+          </p>
+        </div>
+      </footer>
     </div>
-  )
+  );
+}
+
+export async function getStaticProps() {
+  const faqs = await client.fetch(faqQuery);
+  return {
+    props: {
+      faqs,
+    },
+    revalidate: 60, // Regenerate page every 60 seconds (or adjust as needed)
+  };
 }
