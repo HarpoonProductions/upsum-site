@@ -19,11 +19,7 @@ const query = groq`
   }
 `
 
-export default async function Page({
-  params,
-}: {
-  params: { slug: string }
-}) {
+export default async function Page({ params }: any) {
   const faq = await client.fetch(query, { slug: params.slug })
 
   if (!faq) {
@@ -58,4 +54,3 @@ export default async function Page({
     </div>
   )
 }
-// Slight edit to force Vercel to rebuild
