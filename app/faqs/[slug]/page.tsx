@@ -4,25 +4,6 @@ import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-interface Faq {
-  _id: string
-  question: string
-  answer: any
-  image?: {
-    asset?: {
-      _id: string
-      url: string
-    }
-    alt?: string
-  }
-}
-
-interface FaqPageProps {
-  params: {
-    slug: string
-  }
-}
-
 const query = groq`
   *[_type == "faq" && slug.current == $slug][0]{
     _id,
@@ -38,8 +19,12 @@ const query = groq`
   }
 `
 
-export default async function FaqPage({ params }: FaqPageProps) {
-  const faq: Faq = await client.fetch(query, { slug: params.slug })
+export default async function Page({
+  params,
+}: {
+  params: { slug: string }
+}) {
+  const faq = await client.fetch(query, { slug: params.slug })
 
   if (!faq) {
     return <div className="text-center py-20">FAQ not found</div>
