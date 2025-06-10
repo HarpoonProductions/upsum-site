@@ -1,119 +1,42 @@
-// app/page.tsx
+import Image from 'next/image'
+import Link from 'next/link'
+import { client } from '@/lib/sanity'
+import { urlFor } from '@/lib/sanityImage'
+import fallbackImage from '@/public/fallback.jpg'
+import groq from 'groq'
 
-import Head from 'next/head'; // Still useful for <head> tags
-import Link from 'next/link';
-import { client } from '../lib/sanity'; // Adjust this path if your Sanity client is elsewhere
-
-// Define the FAQ type
-interface FAQ {
-  _id: string;
-  question: string;
-  answer: any; // Portable Text object from Sanity
-  slug: {
-    current: string;
-  };
-}
-
-// Helper function to extract plain text from Portable Text
-function toPlainText(blocks: any[]): string {
-  if (!blocks || !Array.isArray(blocks)) return '';
-  
-  return blocks
-    .map((block: any) => {
-      if (block._type !== 'block' || !block.children) {
-        return '';
+export default async function HomePage() {
+  const query = groq`
+    *[_type == "faq"] | order(publishedAt desc)[0...6] {
+      _id,
+      question,
+      slug,
+      summaryForAI,
+      image {
+        asset->{
+          _id,
+          url
+        }
       }
-      return block.children.map((child: any) => child.text).join('');
-    })
-    .join('\n\n');
-}
-
-// Sanity query to fetch all published FAQs
-const faqQuery = `*[_type == "faq" && defined(slug.current)] | order(_createdAt asc) {
-  _id,
-  question,
-  answer,
-  slug,
-}`;
-
-// Data fetching in App Router happens directly in the component (as a Server Component)
-async function getFaqs(): Promise<FAQ[]> {
-  // Next.js automatically caches data fetched in Server Components.
-  // To revalidate, you can use `revalidate` option in fetch or tag data.
-  // For Sanity, you'd typically manage revalidation via Sanity webhooks or
-  // by setting a `next.revalidate` option in a `fetch` call if you were
-  // fetching from an API endpoint directly.
-  // For direct client.fetch, Next.js treats it as static by default on build.
-  // If you need more frequent revalidation without a webhook, consider a revalidation tag:
-  // const faqs = await client.fetch(faqQuery, {}, { next: { tags: ['faqs'], revalidate: 60 } }); // Example revalidate every 60 seconds
-  const faqs = await client.fetch(faqQuery);
-  return faqs;
-}
-
-export default async function Home() {
-  const faqs = await getFaqs(); // Call the async data fetching function
+    }
+  `
+  const faqs = await client.fetch(query)
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Head component for metadata (still valid in App Router) */}
-      <Head>
-        <title>Upsum Project - Simple Answers</title>
-        <meta name="description" content="Simple answers for the modern internet." />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      {/* Main content area with full-width grey background */}
-      <main className="flex-grow bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 w-full">
-        <div className="max-w-4xl mx-auto"> {/* Max width for content within the grey background */}
-          <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-12">
-            Frequently Asked Questions
-          </h1>
-
-          <div className="space-y-8">
-            {faqs.map((faq: FAQ) => (
-              <div key={faq._id} className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-3">
-                  <Link href={`/faq/${faq.slug.current}`} className="hover:text-blue-600 transition-colors duration-200">
-                    {faq.question}
-                  </Link>
-                </h2>
-                <p className="text-gray-600 leading-relaxed">
-                  {/* Convert Portable Text to plain text and truncate */}
-                  {(() => {
-                    const plainText = toPlainText(faq.answer);
-                    return plainText && plainText.length > 150 ? `${plainText.substring(0, 150)}...` : plainText;
-                  })()}
-                </p>
-                {(() => {
-                  const plainText = toPlainText(faq.answer);
-                  return plainText && plainText.length > 150 && (
-                    <Link href={`/faq/${faq.slug.current}`} className="text-blue-500 hover:text-blue-600 font-medium mt-2 inline-block">
-                      Read more
-                    </Link>
-                  );
-                })()}
-              </div>
-            ))}
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8 px-4 sm:px-6 lg:px-8 w-full">
-        <div className="max-w-4xl mx-auto text-center text-sm">
-          <p>
-            This website is part of the Upsum project, which aims to provide simple answers for the modern internet where search and AI makes stuff up that it doesn&apos;t know. It&apos;s brought to you by Harpoon Productions. To learn more about our project, go to{' '}
-            <a href="https://Upsum.News" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
-              Upsum.News
-            </a>
-            . Upsum is a trademark of Harpoon Productions Ltd.
-          </p>
-        </div>
-      </footer>
-    </div>
-  );
-}
-
-// Optional: If you need to force dynamic rendering for some reason (less common for a static FAQ page)
-// export const dynamic = 'force-dynamic'; // or 'force-static' (default for this setup)
-// export const revalidate = 60; // Revalidate data every 60 seconds (useful for incremental static regeneration)
+    <div className="bg-gray-100 min-h-screen py-8 px-4 font-sans">
+      <div className="flex justify-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl">
+          {faqs.length === 0 && (
+            <p className="text-center text-red-600 font-bold col-span-full">
+              No FAQs found.
+            </p>
+          )}
+          {faqs.map((faq) => (
+            <Link
+              href={`/articles/${faq.slug.current}`}
+              key={faq._id}
+              className="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200"
+            >
+              <div className="w-full h-48 relative mb-4">
+                <Image
+                  sr
