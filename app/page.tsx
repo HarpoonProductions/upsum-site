@@ -1,163 +1,136 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import { client } from '@/lib/sanity'
+import { groq } from 'next-sanity'
+import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { urlFor } from '@/lib/sanityImage'
 import Head from 'next/head'
 
-const fallbackImage = '/fallback.jpg'
-
-interface Faq {
-  _id: string
-  question: string
-  slug: {
-    current: string
+const query = groq`*[_type == "faq" && slug.current == $slug][0]{
+  _id,
+  question,
+  answer,
+  slug,
+  tags,
+  image {
+    asset->{
+      _id,
+      url
+    },
+    alt
   }
-  summaryForAI: string
-  tags?: string[]
-  image?: {
-    asset?: {
-      _id: string
-      url: string
+}`
+
+const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && count((tags[])[@ in $tags]) > 0][0...3]{
+  _id,
+  question,
+  slug,
+  summaryForAI,
+  image {
+    asset->{
+      url
     }
   }
-}
+}`
 
-async function fetchFaqs(): Promise<Faq[]> {
-  const res = await fetch('/api/faqs')
-  return res.json()
-}
+export default async function FaqPage({ params }: { params: { slug: string } }) {
+  const { slug } = params
+  const faq = await client.fetch(query, { slug })
 
-export default function HomePage() {
-  const [faqs, setFaqs] = useState<Faq[]>([])
-  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  if (!faq) {
+    return <div>FAQ not found</div>
+  }
 
-  useEffect(() => {
-    fetchFaqs().then(setFaqs)
-  }, [])
+  const relatedFaqs = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
 
-  const filteredFaqs = selectedTag
-    ? faqs.filter((faq) => faq.tags?.includes(selectedTag))
-    : faqs
-
-  const popularTags = ['UPF', 'Health', 'Nutrition', 'Policy']
+  const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
   return (
     <>
       <Head>
-        <title>Upsum – Questions that explain the news</title>
-        <meta
-          name="description"
-          content="A platform for explaining the news through structured questions and answers."
-        />
-        <link rel="canonical" href="https://upsum-site.vercel.app/" />
+        <title>{faq.question} – Upsum</title>
+        <link rel="canonical" href={faqUrl} />
+        <meta name="description" content={faq.summaryForAI || 'A structured answer from Upsum'} />
 
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://upsum-site.vercel.app/" />
-        <meta property="og:title" content="Upsum – Questions that explain the news" />
-        <meta
-          property="og:description"
-          content="A platform for explaining the news through structured questions and answers."
-        />
-        <meta property="og:image" content="https://upsum-site.vercel.app/og-image.jpg" />
+        {/* Open Graph / Twitter */}
+        <meta property="og:title" content={`${faq.question} – Upsum`} />
+        <meta property="og:description" content={faq.summaryForAI || ''} />
+        <meta property="og:url" content={faqUrl} />
+        {faq.image?.asset?.url && <meta property="og:image" content={faq.image.asset.url} />}
 
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Upsum – Questions that explain the news" />
-        <meta
-          name="twitter:description"
-          content="A platform for explaining the news through structured questions and answers."
-        />
-        <meta name="twitter:image" content="https://upsum-site.vercel.app/og-image.jpg" />
 
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: filteredFaqs.slice(0, 10).map((faq) => ({
-              "@type": "Question",
+        {/* JSON-LD Structured Data */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [{
+              '@type': 'Question',
               name: faq.question,
               acceptedAnswer: {
-                "@type": "Answer",
-                text: faq.summaryForAI,
+                '@type': 'Answer',
+                text: typeof faq.answer === 'string' ? faq.answer : '',
               },
-            })),
-          })}
-        </script>
-
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "Upsum",
-            url: "https://upsum-site.vercel.app/",
-            logo: "https://upsum-site.vercel.app/logo.png",
-            sameAs: [
-              "https://twitter.com/[your-handle]",
-              "https://www.linkedin.com/company/[your-page]",
-            ],
-            founder: {
-              "@type": "Person",
-              name: "Giles Wilson",
-            },
-          })}
-        </script>
+            }],
+            url: faqUrl
+          })
+        }} />
       </Head>
 
       <div className="min-h-screen flex flex-col justify-between bg-gray-100">
         <main className="w-full py-10 px-4">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">Upsum</h1>
             <p className="text-center text-gray-600 text-lg mb-10">
               A platform for explaining the news through structured questions and answers.
             </p>
 
-            {/* Popular Tags */}
-            <div className="flex flex-wrap justify-center gap-3 mb-8">
-              {popularTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-                  className={`text-sm font-medium px-3 py-1 rounded-full transition ${
-                    selectedTag === tag
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-blue-100 text-blue-800'
-                  }`}
-                >
-                  #{tag}
-                </button>
-              ))}
+            <h2 className="text-2xl font-bold mb-4">{faq.question}</h2>
+
+            {faq.image?.asset?.url && (
+              <div className="mb-6">
+                <Image
+                  src={faq.image.asset.url}
+                  alt={faq.image.alt || faq.question}
+                  width={800}
+                  height={450}
+                  className="rounded"
+                />
+              </div>
+            )}
+
+            <div className="prose prose-lg mb-8">
+              <PortableText value={faq.answer} />
             </div>
 
-            <div className="flex justify-center">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                {filteredFaqs.map((faq) => (
-                  <Link
-                    href={`/faqs/${faq.slug.current}`}
-                    key={faq._id}
-                    className="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200"
-                  >
-                    <div className="w-full h-48 relative mb-4">
-                      <Image
-                        src={
-                          faq.image?.asset?.url
-                            ? urlFor(faq.image).width(800).height(400).url()
-                            : fallbackImage
-                        }
-                        alt={faq.question}
-                        fill
-                        className="object-cover rounded"
-                      />
-                    </div>
-                    <h2 className="text-xl font-semibold mb-2">{faq.question}</h2>
-                    <p className="text-sm text-gray-700">{faq.summaryForAI}</p>
-                  </Link>
-                ))}
-              </div>
+            {/* How to cite this page */}
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded mb-10 text-sm">
+              <h3 className="font-semibold text-blue-800 mb-2">How to cite this page</h3>
+              <p>
+                "{faq.question}." <em>Upsum</em>. Available at: <a href={faqUrl} className="underline text-blue-600">{faqUrl}</a>
+              </p>
             </div>
+
+            {/* Related FAQs */}
+            {relatedFaqs?.length > 0 && (
+              <div className="mt-12">
+                <h3 className="text-xl font-semibold mb-4">Related questions</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {relatedFaqs.map((related: any) => (
+                    <Link
+                      key={related._id}
+                      href={`/faqs/${related.slug.current}`}
+                      className="bg-white rounded shadow hover:shadow-md p-4 transition block"
+                    >
+                      <h4 className="text-md font-semibold mb-1">{related.question}</h4>
+                      <p className="text-sm text-gray-600">{related.summaryForAI}</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </main>
 
