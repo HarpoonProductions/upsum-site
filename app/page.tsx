@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
 import { urlFor } from '@/lib/sanityImage'
+import Head from 'next/head'
 
 const fallbackImage = '/fallback.jpg'
 
@@ -52,6 +52,59 @@ export default function HomePage() {
           content="A platform for explaining the news through structured questions and answers."
         />
         <link rel="canonical" href="https://upsum-site.vercel.app/" />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://upsum-site.vercel.app/" />
+        <meta property="og:title" content="Upsum – Questions that explain the news" />
+        <meta
+          property="og:description"
+          content="A platform for explaining the news through structured questions and answers."
+        />
+        <meta property="og:image" content="https://upsum-site.vercel.app/og-image.jpg" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Upsum – Questions that explain the news" />
+        <meta
+          name="twitter:description"
+          content="A platform for explaining the news through structured questions and answers."
+        />
+        <meta name="twitter:image" content="https://upsum-site.vercel.app/og-image.jpg" />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: filteredFaqs.slice(0, 10).map((faq) => ({
+              "@type": "Question",
+              name: faq.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.summaryForAI,
+              },
+            })),
+          })}
+        </script>
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Upsum",
+            url: "https://upsum-site.vercel.app/",
+            logo: "https://upsum-site.vercel.app/logo.png",
+            sameAs: [
+              "https://twitter.com/[your-handle]",
+              "https://www.linkedin.com/company/[your-page]",
+            ],
+            founder: {
+              "@type": "Person",
+              name: "Giles Wilson",
+            },
+          })}
+        </script>
       </Head>
 
       <div className="min-h-screen flex flex-col justify-between bg-gray-100">
