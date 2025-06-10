@@ -5,7 +5,22 @@ import { client } from '@/lib/sanity'
 import { urlFor } from '@/lib/sanityImage'
 import groq from 'groq'
 
-const fallbackImage = '/fallback.jpg' // Ensure you have this in your /public folder
+const fallbackImage = '/fallback.jpg'
+
+interface Faq {
+  _id: string
+  question: string
+  slug: {
+    current: string
+  }
+  summaryForAI: string
+  image?: {
+    asset?: {
+      _id: string
+      url: string
+    }
+  }
+}
 
 export default async function HomePage() {
   const query = groq`
@@ -23,7 +38,7 @@ export default async function HomePage() {
     }
   `
 
-  const faqs = await client.fetch(query)
+  const faqs: Faq[] = await client.fetch(query)
 
   return (
     <div className="bg-gray-100 min-h-screen py-8 px-4 font-sans">
