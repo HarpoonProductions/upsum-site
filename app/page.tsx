@@ -1,9 +1,9 @@
-import React from 'react'
+'use client'
+
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { client } from '@/lib/sanity'
 import { urlFor } from '@/lib/sanityImage'
-import groq from 'groq'
 
 const fallbackImage = '/fallback.jpg'
 
@@ -14,6 +14,7 @@ interface Faq {
     current: string
   }
   summaryForAI: string
+  tags?: string[]
   image?: {
     asset?: {
       _id: string
@@ -22,28 +23,28 @@ interface Faq {
   }
 }
 
-export default async function HomePage() {
-  const query = groq`
-    *[_type == "faq"] | order(publishedAt desc) {
-      _id,
-      question,
-      slug,
-      summaryForAI,
-      publishedAt,
-      image {
-        asset->{
-          _id,
-          url
-        }
-      }
-    }
-  `
+// Fetch from a route handler or API if needed
+async function fetchFaqs(): Promise<Faq[]> {
+  const res = await fetch('/api/faqs')
+  return res.json()
+}
 
-  const faqs: Faq[] = await client.fetch(query)
+export default function HomePage() {
+  const [faqs, setFaqs] = useState<Faq[]>([])
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchFaqs().then(setFaqs)
+  }, [])
+
+  const filteredFaqs = selectedTag
+    ? faqs.filter((faq) => faq.tags?.includes(selectedTag))
+    : faqs
+
+  const popularTags = ['UPF', 'Health', 'Nutrition', 'Policy']
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-gray-100">
-      {/* Main Content */}
       <main className="w-full py-10 px-4">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">Upsum</h1>
@@ -51,16 +52,28 @@ export default async function HomePage() {
             A platform for explaining the news through structured questions and answers.
           </p>
 
+          {/* Popular Tags */}
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
+            {popularTags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                className={`text-sm font-medium px-3 py-1 rounded-full transition ${
+                  selectedTag === tag
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-blue-100 text-blue-800'
+                }`}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+
           <div className="flex justify-center">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-              {faqs.length === 0 && (
-                <p className="text-center text-red-600 font-bold col-span-full">
-                  No FAQs found.
-                </p>
-              )}
-              {faqs.map((faq) => (
+              {filteredFaqs.map((faq) => (
                 <Link
-                  href={`/articles/${faq.slug.current}`}
+                  href={`/faqs/${faq.slug.current}`}
                   key={faq._id}
                   className="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200"
                 >
@@ -85,7 +98,6 @@ export default async function HomePage() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="bg-gray-200 text-sm text-gray-700 px-4 py-6 mt-12 w-full">
         <div className="max-w-4xl mx-auto text-center">
           <p>
