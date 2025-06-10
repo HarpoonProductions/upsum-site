@@ -8,10 +8,24 @@ import { client } from '../lib/sanity'; // Adjust this path if your Sanity clien
 interface FAQ {
   _id: string;
   question: string;
-  answer: string;
+  answer: any; // Portable Text object from Sanity
   slug: {
     current: string;
   };
+}
+
+// Helper function to extract plain text from Portable Text
+function toPlainText(blocks: any[]): string {
+  if (!blocks || !Array.isArray(blocks)) return '';
+  
+  return blocks
+    .map((block: any) => {
+      if (block._type !== 'block' || !block.children) {
+        return '';
+      }
+      return block.children.map((child: any) => child.text).join('');
+    })
+    .join('\n\n');
 }
 
 // Sanity query to fetch all published FAQs
@@ -64,14 +78,20 @@ export default async function Home() {
                   </Link>
                 </h2>
                 <p className="text-gray-600 leading-relaxed">
-                  {/* You might want to truncate the answer here or show a summary */}
-                  {faq.answer && faq.answer.length > 150 ? `${faq.answer.substring(0, 150)}...` : faq.answer}
+                  {/* Convert Portable Text to plain text and truncate */}
+                  {(() => {
+                    const plainText = toPlainText(faq.answer);
+                    return plainText && plainText.length > 150 ? `${plainText.substring(0, 150)}...` : plainText;
+                  })()}
                 </p>
-                {faq.answer && faq.answer.length > 150 && (
-                  <Link href={`/faq/${faq.slug.current}`} className="text-blue-500 hover:text-blue-600 font-medium mt-2 inline-block">
-                    Read more
-                  </Link>
-                )}
+                {(() => {
+                  const plainText = toPlainText(faq.answer);
+                  return plainText && plainText.length > 150 && (
+                    <Link href={`/faq/${faq.slug.current}`} className="text-blue-500 hover:text-blue-600 font-medium mt-2 inline-block">
+                      Read more
+                    </Link>
+                  );
+                })()}
               </div>
             ))}
           </div>
