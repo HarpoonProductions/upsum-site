@@ -24,11 +24,12 @@ interface Faq {
 
 export default async function HomePage() {
   const query = groq`
-    *[_type == "faq"] | order(publishedAt desc)[0...6] {
+    *[_type == "faq"] | order(publishedAt desc) {
       _id,
       question,
       slug,
       summaryForAI,
+      publishedAt,
       image {
         asset->{
           _id,
@@ -41,14 +42,17 @@ export default async function HomePage() {
   const faqs: Faq[] = await client.fetch(query)
 
   return (
-    <div className="bg-gray-100 min-h-screen flex flex-col justify-between">
+    <div className="min-h-screen flex flex-col justify-between bg-gray-100">
       {/* Main Content */}
-      <main className="px-4 py-10">
+      <main className="w-full py-10 px-4">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">Latest FAQs</h1>
+          <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">Upsum</h1>
+          <p className="text-center text-gray-600 text-lg mb-10">
+            A platform for explaining the news through structured questions and answers.
+          </p>
 
           <div className="flex justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
               {faqs.length === 0 && (
                 <p className="text-center text-red-600 font-bold col-span-full">
                   No FAQs found.
@@ -82,7 +86,7 @@ export default async function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-200 text-sm text-gray-700 px-4 py-6 mt-12">
+      <footer className="bg-gray-200 text-sm text-gray-700 px-4 py-6 mt-12 w-full">
         <div className="max-w-4xl mx-auto text-center">
           <p>
             <strong>Upsum</strong> is a platform for explaining the news through structured questions and answers.
