@@ -1,6 +1,6 @@
-// pages/index.js (or wherever your homepage component is located)
+// app/page.tsx
 
-import Head from 'next/head';
+import Head from 'next/head'; // Still useful for <head> tags
 import Link from 'next/link';
 import { client } from '../lib/sanity'; // Adjust this path if your Sanity client is elsewhere
 
@@ -12,9 +12,26 @@ const faqQuery = `*[_type == "faq" && defined(slug.current)] | order(_createdAt 
   slug,
 }`;
 
-export default function Home({ faqs }) {
+// Data fetching in App Router happens directly in the component (as a Server Component)
+async function getFaqs() {
+  // Next.js automatically caches data fetched in Server Components.
+  // To revalidate, you can use `revalidate` option in fetch or tag data.
+  // For Sanity, you'd typically manage revalidation via Sanity webhooks or
+  // by setting a `next.revalidate` option in a `fetch` call if you were
+  // fetching from an API endpoint directly.
+  // For direct client.fetch, Next.js treats it as static by default on build.
+  // If you need more frequent revalidation without a webhook, consider a revalidation tag:
+  // const faqs = await client.fetch(faqQuery, {}, { next: { tags: ['faqs'], revalidate: 60 } }); // Example revalidate every 60 seconds
+  const faqs = await client.fetch(faqQuery);
+  return faqs;
+}
+
+export default async function Home() {
+  const faqs = await getFaqs(); // Call the async data fetching function
+
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Head component for metadata (still valid in App Router) */}
       <Head>
         <title>Upsum Project - Simple Answers</title>
         <meta name="description" content="Simple answers for the modern internet." />
@@ -38,9 +55,9 @@ export default function Home({ faqs }) {
                 </h2>
                 <p className="text-gray-600 leading-relaxed">
                   {/* You might want to truncate the answer here or show a summary */}
-                  {faq.answer.length > 150 ? `${faq.answer.substring(0, 150)}...` : faq.answer}
+                  {faq.answer && faq.answer.length > 150 ? `${faq.answer.substring(0, 150)}...` : faq.answer}
                 </p>
-                {faq.answer.length > 150 && (
+                {faq.answer && faq.answer.length > 150 && (
                   <Link href={`/faq/${faq.slug.current}`} className="text-blue-500 hover:text-blue-600 font-medium mt-2 inline-block">
                     Read more
                   </Link>
@@ -67,12 +84,6 @@ export default function Home({ faqs }) {
   );
 }
 
-export async function getStaticProps() {
-  const faqs = await client.fetch(faqQuery);
-  return {
-    props: {
-      faqs,
-    },
-    revalidate: 60, // Regenerate page every 60 seconds (or adjust as needed)
-  };
-}
+// Optional: If you need to force dynamic rendering for some reason (less common for a static FAQ page)
+// export const dynamic = 'force-dynamic'; // or 'force-static' (default for this setup)
+// export const revalidate = 60; // Revalidate data every 60 seconds (useful for incremental static regeneration)
