@@ -4,6 +4,16 @@ import Head from 'next/head'; // Still useful for <head> tags
 import Link from 'next/link';
 import { client } from '../lib/sanity'; // Adjust this path if your Sanity client is elsewhere
 
+// Define the FAQ type
+interface FAQ {
+  _id: string;
+  question: string;
+  answer: string;
+  slug: {
+    current: string;
+  };
+}
+
 // Sanity query to fetch all published FAQs
 const faqQuery = `*[_type == "faq" && defined(slug.current)] | order(_createdAt asc) {
   _id,
@@ -13,7 +23,7 @@ const faqQuery = `*[_type == "faq" && defined(slug.current)] | order(_createdAt 
 }`;
 
 // Data fetching in App Router happens directly in the component (as a Server Component)
-async function getFaqs() {
+async function getFaqs(): Promise<FAQ[]> {
   // Next.js automatically caches data fetched in Server Components.
   // To revalidate, you can use `revalidate` option in fetch or tag data.
   // For Sanity, you'd typically manage revalidation via Sanity webhooks or
@@ -46,7 +56,7 @@ export default async function Home() {
           </h1>
 
           <div className="space-y-8">
-            {faqs.map((faq) => (
+            {faqs.map((faq: FAQ) => (
               <div key={faq._id} className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-semibold text-gray-800 mb-3">
                   <Link href={`/faq/${faq.slug.current}`} className="hover:text-blue-600 transition-colors duration-200">
