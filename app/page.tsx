@@ -1,11 +1,8 @@
-'use client'
-
 import { client } from '@/lib/sanity'
 import { groq } from 'next-sanity'
 import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
 import Link from 'next/link'
-import Head from 'next/head'
 
 const query = groq`*[_type == "faq" && slug.current == $slug][0]{
   _id,
@@ -13,6 +10,7 @@ const query = groq`*[_type == "faq" && slug.current == $slug][0]{
   answer,
   slug,
   tags,
+  summaryForAI,
   image {
     asset->{
       _id,
@@ -34,6 +32,28 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
   }
 }`
 
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const faq = await client.fetch(query, { slug: params.slug })
+  const faqUrl = `https://upsum-site.vercel.app/faqs/${params.slug}`
+
+  return {
+    title: `${faq.question} – Upsum`,
+    description: faq.summaryForAI || 'A structured answer from Upsum',
+    alternates: {
+      canonical: faqUrl,
+    },
+    openGraph: {
+      title: `${faq.question} – Upsum`,
+      description: faq.summaryForAI || '',
+      url: faqUrl,
+      images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+    },
+  }
+}
+
 export default async function FaqPage({ params }: { params: { slug: string } }) {
   const { slug } = params
   const faq = await client.fetch(query, { slug })
@@ -43,42 +63,10 @@ export default async function FaqPage({ params }: { params: { slug: string } }) 
   }
 
   const relatedFaqs = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
-
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
   return (
     <>
-      <Head>
-        <title>{faq.question} – Upsum</title>
-        <link rel="canonical" href={faqUrl} />
-        <meta name="description" content={faq.summaryForAI || 'A structured answer from Upsum'} />
-
-        {/* Open Graph / Twitter */}
-        <meta property="og:title" content={`${faq.question} – Upsum`} />
-        <meta property="og:description" content={faq.summaryForAI || ''} />
-        <meta property="og:url" content={faqUrl} />
-        {faq.image?.asset?.url && <meta property="og:image" content={faq.image.asset.url} />}
-
-        <meta name="twitter:card" content="summary_large_image" />
-
-        {/* JSON-LD Structured Data */}
-        <script type="application/ld+json" dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: [{
-              '@type': 'Question',
-              name: faq.question,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: typeof faq.answer === 'string' ? faq.answer : '',
-              },
-            }],
-            url: faqUrl
-          })
-        }} />
-      </Head>
-
       <div className="min-h-screen flex flex-col justify-between bg-gray-100">
         <main className="w-full py-10 px-4">
           <div className="max-w-3xl mx-auto">
@@ -131,6 +119,36 @@ export default async function FaqPage({ params }: { params: { slug: string } }) 
                 </div>
               </div>
             )}
+
+            {/* JSON-LD Structured Data */}
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'FAQPage',
+                  mainEntity: [
+                    {
+                      '@type': 'Question',
+                      name: faq.question,
+                      acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: typeof faq.answer === 'string' ? faq.answer : '',
+                      },
+                    },
+                    ...relatedFaqs.map((r: any) => ({
+                      '@type': 'Question',
+                      name: r.question,
+                      acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: r.summaryForAI || '',
+                      },
+                    }))
+                  ],
+                  url: faqUrl,
+                })
+              }}
+            />
           </div>
         </main>
 
