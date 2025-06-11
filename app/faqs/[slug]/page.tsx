@@ -49,7 +49,7 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 }`
 
 export async function generateMetadata(
-  props: { params: { slug: string } },
+  props: { params: { slug: string } } & Record<string, unknown>,
   _parent?: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = props.params
