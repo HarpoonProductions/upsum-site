@@ -49,12 +49,19 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 }`
 
 export async function generateMetadata(
-  props: any,
+  props: { params: { slug: string } },
   _parent?: ResolvingMetadata
 ): Promise<Metadata> {
-  const { slug } = props.params as { slug: string }
-  const faq: Faq = await client.fetch(query, { slug })
+  const { slug } = props.params
+  const faq: Faq | null = await client.fetch(query, { slug })
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
+
+  if (!faq) {
+    return {
+      title: 'FAQ not found – Upsum',
+      description: 'The requested FAQ could not be found.',
+    }
+  }
 
   return {
     title: `${faq.question} – Upsum`,
