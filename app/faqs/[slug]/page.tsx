@@ -158,3 +158,4 @@ export default async function FaqPage({ params }: PageProps<{ slug: string }>) {
     </div>
   )
 }
+// to push //
