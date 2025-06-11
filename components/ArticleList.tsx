@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { urlFor } from '@/lib/sanity'
-import fallbackImage from '@/public/fallback.jpg'
+import fallbackImage from '/fallback.jpg'
 
 export default function ArticleList({ articles }: { articles: any[] }) {
   return (
