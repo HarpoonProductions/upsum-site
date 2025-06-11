@@ -22,10 +22,6 @@ interface Faq {
   tags?: string[]
 }
 
-interface FaqPageProps {
-  params: { slug: string } | Promise<any>
-}
-
 const query = groq`*[_type == "faq" && slug.current == $slug][0] {
   _id,
   question,
@@ -53,10 +49,10 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 }`
 
 export async function generateMetadata(
-  props: FaqPageProps,
+  { params }: { params: { slug: string } },
   _parent?: ResolvingMetadata
 ): Promise<Metadata> {
-  const { slug } = (props.params as { slug: string })
+  const { slug } = params
   const faq: Faq = await client.fetch(query, { slug })
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
@@ -78,8 +74,8 @@ export async function generateMetadata(
   }
 }
 
-export default async function FaqPage(props: FaqPageProps) {
-  const { slug } = (props.params as { slug: string })
+export default async function FaqPage({ params }: { params: { slug: string } }) {
+  const { slug } = params
   const faq: Faq = await client.fetch(query, { slug })
   if (!faq) return notFound()
   const relatedFaqs: Faq[] = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
