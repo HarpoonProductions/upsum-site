@@ -4,6 +4,22 @@ import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+interface Faq {
+  _id: string
+  question: string
+  answer: any
+  slug: { current: string }
+  tags?: string[]
+  summaryForAI?: string
+  image?: {
+    asset?: {
+      _id: string
+      url: string
+    }
+    alt?: string
+  }
+}
+
 const query = groq`*[_type == "faq" && slug.current == $slug][0]{
   _id,
   question,
@@ -33,7 +49,7 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 }`
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const faq = await client.fetch(query, { slug: params.slug })
+  const faq: Faq = await client.fetch(query, { slug: params.slug })
   const faqUrl = `https://upsum-site.vercel.app/faqs/${params.slug}`
 
   return {
@@ -56,13 +72,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 export default async function FaqPage({ params }: { params: { slug: string } }) {
   const { slug } = params
-  const faq = await client.fetch(query, { slug })
+  const faq: Faq = await client.fetch(query, { slug })
 
   if (!faq) {
     return <div>FAQ not found</div>
   }
 
-  const relatedFaqs = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
+  const relatedFaqs: Faq[] = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
   return (
@@ -106,7 +122,7 @@ export default async function FaqPage({ params }: { params: { slug: string } }) 
               <div className="mt-12">
                 <h3 className="text-xl font-semibold mb-4">Related questions</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {relatedFaqs.map((related: any) => (
+                  {relatedFaqs.map((related: Faq) => (
                     <Link
                       key={related._id}
                       href={`/faqs/${related.slug.current}`}
@@ -136,7 +152,7 @@ export default async function FaqPage({ params }: { params: { slug: string } }) 
                         text: typeof faq.answer === 'string' ? faq.answer : '',
                       },
                     },
-                    ...relatedFaqs.map((r: any) => ({
+                    ...relatedFaqs.map((r: Faq) => ({
                       '@type': 'Question',
                       name: r.question,
                       acceptedAnswer: {
