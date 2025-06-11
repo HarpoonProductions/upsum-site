@@ -3,7 +3,7 @@ import { client } from '@/lib/sanity'
 import Link from 'next/link'
 import Image from 'next/image'
 import { urlFor } from '@/lib/sanity'
-import fallbackImage from '/fallback.jpg'
+// Removed fallback image import - using direct path instead
 
 export default async function HomePage() {
   const query = groq`*[_type == "article" && defined(slug.current)] | order(publishedAt desc)[0...10] {
@@ -27,7 +27,7 @@ export default async function HomePage() {
         {articles.map((article: any) => {
           const imageUrl = article.image?.asset?.url
             ? urlFor(article.image).width(400).height(250).fit('crop').url()
-            : fallbackImage
+            : '/fallback.jpg'
 
           return (
             <Link
