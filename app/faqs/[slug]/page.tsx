@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PortableText } from '@portabletext/react'
 import { Metadata, ResolvingMetadata } from 'next'
-import { notFound } from 'next/navigation' // Keep the notFound import
+import { notFound } from 'next/navigation'
 
 interface Faq {
   _id: string
@@ -22,35 +22,8 @@ interface Faq {
   tags?: string[]
 }
 
-/**
- * Utility type to structurally satisfy PromiseLike for TypeScript's checker.
- * This is a workaround for an unusual type error where 'params' is
- * expected to have Promise-like properties, even when it's a plain object at runtime.
- * This ensures full structural compatibility with Promise, including Symbol.toStringTag.
- */
-type PromiseLikeStructural<T> = {
-  then<TResult1 = T, TResult2 = never>(
-    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null | undefined,
-    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null | undefined
-  ): PromiseLike<TResult1 | TResult2>;
-  catch?<TResult = never>(
-    onrejected?: ((reason: any) => TResult | PromiseLike<T>) | null | undefined
-  ): PromiseLike<T | TResult>;
-  finally?: (() => void) | null | undefined;
-  // Crucially, add the Symbol.toStringTag property to mimic a Promise's structure
-  [Symbol.toStringTag]: 'Promise';
-};
-
-/**
- * Defines the props for the FaqPage component and generateMetadata function.
- * Uses an intersection type to satisfy the TypeScript compiler's demand
- * for PromiseLike properties on 'params', including Symbol.toStringTag,
- * without altering runtime behavior.
- */
-interface FaqPageProps {
-  params: { slug: string } & PromiseLikeStructural<any>;
-  // If you also use searchParams in your page or metadata, you might need to add:
-  // searchParams?: { [key: string]: string | string[] | undefined };
+interface PageProps {
+  params: { slug: string }
 }
 
 const query = groq`*[_type == "faq" && slug.current == $slug][0] {
@@ -80,11 +53,10 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 }`
 
 export async function generateMetadata(
-  // Use FaqPageProps for accurate typing here
-  props: FaqPageProps,
+  props: PageProps,
   _parent?: ResolvingMetadata
 ): Promise<Metadata> {
-  const { slug } = props.params // Access params directly from props
+  const { slug } = props.params
   const faq: Faq | null = await client.fetch(query, { slug })
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
@@ -113,13 +85,10 @@ export async function generateMetadata(
   }
 }
 
-export default async function FaqPage(
-  // Use FaqPageProps for accurate typing here
-  props: FaqPageProps
-) {
-  const { slug } = props.params // Access params directly from props, no type assertion needed
+export default async function FaqPage(props: PageProps) {
+  const { slug } = props.params
   const faq: Faq = await client.fetch(query, { slug })
-  if (!faq) return notFound() // Keep the notFound check
+  if (!faq) return notFound()
   const relatedFaqs: Faq[] = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
@@ -144,4 +113,61 @@ export default async function FaqPage(
               alt={faq.image.alt || faq.question}
               width={800}
               height={450}
-              className="round
+              className="rounded"
+            />
+          </div>
+        )}
+
+        <div className="prose prose-lg mb-10">
+          <PortableText value={faq.answer} />
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded mb-12 text-sm">
+          <h3 className="font-semibold text-blue-800 mb-2">How to cite this page</h3>
+          <p>
+            "{faq.question}." <em>Upsum</em>. Available at: <a href={faqUrl} className="underline text-blue-600">{faqUrl}</a>
+          </p>
+        </div>
+
+        {relatedFaqs?.length > 0 && (
+          <div className="mt-12">
+            <h3 className="text-xl font-semibold mb-4">Related questions</h3>
+            <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {relatedFaqs.map((related) => (
+                <Link
+                  key={related._id}
+                  href={`/faqs/${related.slug.current}`}
+                  className="bg-white rounded shadow hover:shadow-md p-4 transition block"
+                >
+                  <h4 className="text-md font-semibold mb-1">{related.question}</h4>
+                  <p className="text-sm text-gray-600">{related.summaryForAI}</p>
+                </Link>
+              ))}
+            </div>
+            <div className="sm:hidden overflow-x-auto flex space-x-4">
+              {relatedFaqs.map((related) => (
+                <Link
+                  key={related._id}
+                  href={`/faqs/${related.slug.current}`}
+                  className="min-w-[250px] bg-white rounded shadow hover:shadow-md p-4 transition block"
+                >
+                  <h4 className="text-md font-semibold mb-1">{related.question}</h4>
+                  <p className="text-sm text-gray-600">{related.summaryForAI}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      <footer className="bg-gray-200 text-sm text-gray-700 px-4 py-6 mt-12 w-full">
+        <div className="max-w-4xl mx-auto text-center">
+          <p>
+            <strong>Upsum</strong> is a platform for explaining the news through structured questions and answers.
+          </p>
+          <p className="mt-2">Upsum is a trademark of Harpoon Productions Ltd.</p>
+        </div>
+      </footer>
+    </div>
+  )
+}
