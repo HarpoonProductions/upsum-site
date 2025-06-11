@@ -160,4 +160,4 @@ export default async function FaqPage({ params }: { params: { slug: string } }) 
     </div>
   )
 }
-//update to push //
+//update to push  again //
