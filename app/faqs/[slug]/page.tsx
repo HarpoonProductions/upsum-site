@@ -50,7 +50,7 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 
 export async function generateMetadata(
   props: any,
-  _parent?: ResolvingMetadata
+  _parent: ResolvingMetadata | undefined
 ): Promise<Metadata> {
   const { slug } = props.params as { slug: string }
   const faq: Faq = await client.fetch(query, { slug })
