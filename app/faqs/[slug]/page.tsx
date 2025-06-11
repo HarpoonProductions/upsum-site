@@ -89,79 +89,189 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-gray-100 py-10 px-4">
-      <main className="max-w-3xl mx-auto w-full">
-        <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">Upsum</h1>
-        <p className="text-center text-gray-600 text-lg mb-6">
-          A platform for explaining the news through structured questions and answers.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 text-white">
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          {/* Navigation */}
+          <div className="mb-8">
+            <Link 
+              href="/faqs" 
+              className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition-colors duration-200 group text-sm font-medium"
+            >
+              <svg className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to all FAQs
+            </Link>
+          </div>
 
-        <Link href="/" className="text-blue-600 hover:text-blue-800 text-sm underline block mb-6">
-          ← Back to all FAQs
-        </Link>
+          {/* Brand */}
+          <div className="mb-8">
+            <Link href="/" className="inline-block">
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2">
+                Upsum
+              </h1>
+              <p className="text-slate-300 text-lg">
+                Explaining the news through structured questions and answers
+              </p>
+            </Link>
+          </div>
 
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">{faq.question}</h2>
+          {/* Main Question */}
+          <h2 className="text-2xl md:text-4xl font-bold leading-tight">
+            {faq.question}
+          </h2>
+        </div>
+      </div>
 
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-6 py-12">
+        {/* Featured Image */}
         {faq.image?.asset?.url && (
-          <div className="mb-6">
-            <Image
-              src={faq.image.asset.url}
-              alt={faq.image.alt || faq.question}
-              width={800}
-              height={450}
-              className="rounded"
-            />
+          <div className="mb-12 -mt-20 relative z-10">
+            <div className="rounded-3xl overflow-hidden shadow-2xl bg-white p-2">
+              <Image
+                src={faq.image.asset.url}
+                alt={faq.image.alt || faq.question}
+                width={800}
+                height={450}
+                className="rounded-2xl w-full h-auto object-cover"
+              />
+            </div>
           </div>
         )}
 
-        <div className="prose prose-lg mb-10">
-          <PortableText value={faq.answer} />
-        </div>
+        {/* Article Content */}
+        <article className="bg-white rounded-3xl shadow-lg p-8 md:p-12 mb-12">
+          <div className="prose prose-lg prose-slate max-w-none">
+            <PortableText value={faq.answer} />
+          </div>
+        </article>
 
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded mb-12 text-sm">
-          <h3 className="font-semibold text-blue-800 mb-2">How to cite this page</h3>
-          <p>
-            "{faq.question}." <em>Upsum</em>. Available at: <a href={faqUrl} className="underline text-blue-600">{faqUrl}</a>
-          </p>
-        </div>
-
-        {relatedFaqs?.length > 0 && (
-          <div className="mt-12">
-            <h3 className="text-xl font-semibold mb-4">Related questions</h3>
-            <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {relatedFaqs.map((related) => (
-                <Link
-                  key={related._id}
-                  href={`/faqs/${related.slug.current}`}
-                  className="bg-white rounded shadow hover:shadow-md p-4 transition block"
-                >
-                  <h4 className="text-md font-semibold mb-1">{related.question}</h4>
-                  <p className="text-sm text-gray-600">{related.summaryForAI}</p>
-                </Link>
-              ))}
+        {/* Citation Box */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-12">
+          <div className="flex items-start gap-4">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
             </div>
-            <div className="sm:hidden overflow-x-auto flex space-x-4">
-              {relatedFaqs.map((related) => (
-                <Link
-                  key={related._id}
-                  href={`/faqs/${related.slug.current}`}
-                  className="min-w-[250px] bg-white rounded shadow hover:shadow-md p-4 transition block"
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-2 text-lg">How to cite this page</h3>
+              <p className="text-sm text-slate-700 leading-relaxed">
+                "{faq.question}." <em className="font-medium">Upsum</em>. Available at:{' '}
+                <a 
+                  href={faqUrl} 
+                  className="text-blue-600 hover:text-blue-700 underline decoration-2 underline-offset-2 transition-colors duration-200 break-all"
                 >
-                  <h4 className="text-md font-semibold mb-1">{related.question}</h4>
-                  <p className="text-sm text-gray-600">{related.summaryForAI}</p>
-                </Link>
-              ))}
+                  {faqUrl}
+                </a>
+              </p>
             </div>
           </div>
+        </div>
+
+        {/* Related Questions */}
+        {relatedFaqs?.length > 0 && (
+          <section className="mt-16">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-slate-800 mb-4">Related Questions</h3>
+              <p className="text-slate-600 text-lg">Explore more topics that might interest you</p>
+            </div>
+
+            {/* Desktop Grid */}
+            <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {relatedFaqs.map((related, index) => (
+                <Link
+                  key={related._id}
+                  href={`/faqs/${related.slug.current}`}
+                  className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
+                >
+                  {related.image?.asset?.url && (
+                    <div className="relative h-48 overflow-hidden">
+                      <Image
+                        src={related.image.asset.url}
+                        alt={related.question}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <h4 className="text-lg font-semibold text-slate-800 mb-3 leading-tight group-hover:text-blue-600 transition-colors duration-200">
+                      {related.question}
+                    </h4>
+                    {related.summaryForAI && (
+                      <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed">
+                        {related.summaryForAI}
+                      </p>
+                    )}
+                    <div className="mt-4 flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors duration-200">
+                      Read more
+                      <svg className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Mobile Horizontal Scroll */}
+            <div className="sm:hidden">
+              <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+                {relatedFaqs.map((related) => (
+                  <Link
+                    key={related._id}
+                    href={`/faqs/${related.slug.current}`}
+                    className="flex-shrink-0 w-72 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                  >
+                    {related.image?.asset?.url && (
+                      <div className="relative h-40 overflow-hidden">
+                        <Image
+                          src={related.image.asset.url}
+                          alt={related.question}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-5">
+                      <h4 className="text-lg font-semibold text-slate-800 mb-2 leading-tight">
+                        {related.question}
+                      </h4>
+                      {related.summaryForAI && (
+                        <p className="text-sm text-slate-600 line-clamp-2">
+                          {related.summaryForAI}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
         )}
       </main>
 
-      <footer className="bg-gray-200 text-sm text-gray-700 px-4 py-6 mt-12 w-full">
-        <div className="max-w-4xl mx-auto text-center">
-          <p>
-            <strong>Upsum</strong> is a platform for explaining the news through structured questions and answers.
-          </p>
-          <p className="mt-2">Upsum is a trademark of Harpoon Productions Ltd.</p>
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-300 mt-20">
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <div className="text-center">
+            <div className="mb-6">
+              <h4 className="text-2xl font-bold text-white mb-2">Upsum</h4>
+              <p className="text-lg">
+                A platform for explaining the news through structured questions and answers
+              </p>
+            </div>
+            <div className="border-t border-slate-800 pt-6">
+              <p className="text-sm">
+                Upsum is a trademark of <span className="font-medium text-white">Harpoon Productions Ltd.</span>
+              </p>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
