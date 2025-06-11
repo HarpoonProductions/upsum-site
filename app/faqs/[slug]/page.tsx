@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PortableText } from '@portabletext/react'
 import { Metadata, ResolvingMetadata } from 'next'
-import { PageProps } from 'next' // Import PageProps from next
+import { notFound } from 'next/navigation'
 
 interface Faq {
   _id: string
@@ -20,13 +20,6 @@ interface Faq {
     alt?: string
   }
   tags?: string[]
-}
-
-// Modify FaqPageProps to extend PageProps
-interface FaqPageProps extends PageProps {
-  params: { slug: string };
-  // You might also need to include 'searchParams' if you use them in the page or metadata.
-  // searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 const query = groq`*[_type == "faq" && slug.current == $slug][0] {
@@ -56,10 +49,10 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 }`
 
 export async function generateMetadata(
-  props: FaqPageProps, // This is now correctly typed
+  { params }: { params: { slug: string } },
   _parent?: ResolvingMetadata
 ): Promise<Metadata> {
-  const { slug } = props.params
+  const { slug } = params
   const faq: Faq = await client.fetch(query, { slug })
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
@@ -81,9 +74,10 @@ export async function generateMetadata(
   }
 }
 
-export default async function FaqPage(props: FaqPageProps) {
-  const { slug } = props.params
+export default async function FaqPage({ params }: { params: { slug: string } }) {
+  const { slug } = params
   const faq: Faq = await client.fetch(query, { slug })
+  if (!faq) return notFound()
   const relatedFaqs: Faq[] = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
