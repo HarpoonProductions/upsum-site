@@ -2,7 +2,7 @@ import { client } from '@/lib/sanity'
 import { groq } from 'next-sanity'
 import Image from 'next/image'
 import Link from 'next/link'
-import { PortableText } from '@portabletext/react'
+import { PortableText } => '@portabletext/react'
 import { Metadata, ResolvingMetadata } from 'next'
 
 interface Faq {
@@ -25,6 +25,7 @@ interface Faq {
  * Utility type to structurally satisfy PromiseLike for TypeScript's checker.
  * This is a workaround for an unusual type error where 'params' is
  * expected to have Promise-like properties, even when it's a plain object at runtime.
+ * Now includes Symbol.toStringTag for full structural compatibility with Promise.
  */
 type PromiseLikeStructural<T> = {
   then<TResult1 = T, TResult2 = never>(
@@ -35,12 +36,15 @@ type PromiseLikeStructural<T> = {
     onrejected?: ((reason: any) => TResult | PromiseLike<T>) | null | undefined
   ): PromiseLike<T | TResult>;
   finally?: (() => void) | null | undefined;
+  // Crucially, add the Symbol.toStringTag property to mimic a Promise's structure
+  [Symbol.toStringTag]: 'Promise';
 };
 
 /**
  * Defines the props for the FaqPage component and generateMetadata function.
  * Uses an intersection type to satisfy the TypeScript compiler's demand
- * for PromiseLike properties on 'params', without altering runtime behavior.
+ * for PromiseLike properties on 'params', including Symbol.toStringTag,
+ * without altering runtime behavior.
  */
 interface FaqPageProps {
   params: { slug: string } & PromiseLikeStructural<any>;
