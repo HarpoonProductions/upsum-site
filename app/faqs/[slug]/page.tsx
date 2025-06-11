@@ -3,7 +3,7 @@ import { groq } from 'next-sanity'
 import Image from 'next/image'
 import Link from 'next/link'
 import { PortableText } from '@portabletext/react'
-import { Metadata } from 'next'
+import { Metadata, ResolvingMetadata } from 'next'
 
 interface Faq {
   _id: string
@@ -48,10 +48,11 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 }`
 
 export async function generateMetadata(
-  { params }: { params: { slug: string } }
+  props: { params: { slug: string } },
+  _parent?: ResolvingMetadata
 ): Promise<Metadata> {
-  const faq: Faq = await client.fetch(query, { slug: params.slug })
-  const faqUrl = `https://upsum-site.vercel.app/faqs/${params.slug}`
+  const faq: Faq = await client.fetch(query, { slug: props.params.slug })
+  const faqUrl = `https://upsum-site.vercel.app/faqs/${props.params.slug}`
 
   return {
     title: `${faq.question} – Upsum`,
@@ -71,8 +72,8 @@ export async function generateMetadata(
   }
 }
 
-export default async function FaqPage({ params }: { params: { slug: string } }) {
-  const { slug } = params
+export default async function FaqPage(props: { params: { slug: string } }) {
+  const { slug } = props.params
   const faq: Faq = await client.fetch(query, { slug })
   const relatedFaqs: Faq[] = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
