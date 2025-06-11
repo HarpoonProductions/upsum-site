@@ -4,7 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PortableText } from '@portabletext/react'
 import { Metadata, ResolvingMetadata } from 'next'
-import type { PageProps } from 'next'
 
 interface Faq {
   _id: string
@@ -73,7 +72,7 @@ export async function generateMetadata(
   }
 }
 
-export default async function FaqPage({ params }: PageProps<{ slug: string }>) {
+export default async function FaqPage({ params }: { params: { slug: string } }) {
   const { slug } = params
   const faq: Faq = await client.fetch(query, { slug })
   const relatedFaqs: Faq[] = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
@@ -158,4 +157,3 @@ export default async function FaqPage({ params }: PageProps<{ slug: string }>) {
     </div>
   )
 }
-// to push //
