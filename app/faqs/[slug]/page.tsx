@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PortableText } from '@portabletext/react'
 import { Metadata, ResolvingMetadata } from 'next'
+import { PageProps } from 'next' // Import PageProps from next
 
 interface Faq {
   _id: string
@@ -21,8 +22,11 @@ interface Faq {
   tags?: string[]
 }
 
-interface FaqPageProps {
-  params: { slug: string }
+// Modify FaqPageProps to extend PageProps
+interface FaqPageProps extends PageProps {
+  params: { slug: string };
+  // You might also need to include 'searchParams' if you use them in the page or metadata.
+  // searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 const query = groq`*[_type == "faq" && slug.current == $slug][0] {
@@ -52,7 +56,7 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 }`
 
 export async function generateMetadata(
-  props: FaqPageProps,
+  props: FaqPageProps, // This is now correctly typed
   _parent?: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = props.params
