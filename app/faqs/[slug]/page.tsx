@@ -3,6 +3,7 @@ import { groq } from 'next-sanity'
 import Image from 'next/image'
 import Link from 'next/link'
 import { PortableText } from '@portabletext/react'
+import { Metadata } from 'next'
 
 interface Faq {
   _id: string
@@ -45,6 +46,30 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
     asset->{ url }
   }
 }`
+
+export async function generateMetadata(
+  { params }: { params: { slug: string } }
+): Promise<Metadata> {
+  const faq: Faq = await client.fetch(query, { slug: params.slug })
+  const faqUrl = `https://upsum-site.vercel.app/faqs/${params.slug}`
+
+  return {
+    title: `${faq.question} – Upsum`,
+    description: faq.summaryForAI || 'A structured answer from Upsum',
+    alternates: {
+      canonical: faqUrl,
+    },
+    openGraph: {
+      title: `${faq.question} – Upsum`,
+      description: faq.summaryForAI || '',
+      url: faqUrl,
+      images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+    },
+  }
+}
 
 export default async function FaqPage({ params }: { params: { slug: string } }) {
   const { slug } = params
