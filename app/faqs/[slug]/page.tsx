@@ -2,8 +2,9 @@ import { client } from '@/lib/sanity'
 import { groq } from 'next-sanity'
 import Image from 'next/image'
 import Link from 'next/link'
-import { PortableText } from '@portabletext/react' // <-- FIXED THIS LINE
+import { PortableText } from '@portabletext/react'
 import { Metadata, ResolvingMetadata } from 'next'
+import { notFound } from 'next/navigation'
 
 interface Faq {
   _id: string
@@ -19,37 +20,6 @@ interface Faq {
     alt?: string
   }
   tags?: string[]
-}
-
-/**
- * Utility type to structurally satisfy PromiseLike for TypeScript's checker.
- * This is a workaround for an unusual type error where 'params' is
- * expected to have Promise-like properties, even when it's a plain object at runtime.
- * Now includes Symbol.toStringTag for full structural compatibility with Promise.
- */
-type PromiseLikeStructural<T> = {
-  then<TResult1 = T, TResult2 = never>(
-    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null | undefined,
-    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null | undefined
-  ): PromiseLike<TResult1 | TResult2>;
-  catch?<TResult = never>(
-    onrejected?: ((reason: any) => TResult | PromiseLike<T>) | null | undefined
-  ): PromiseLike<T | TResult>;
-  finally?: (() => void) | null | undefined;
-  // Crucially, add the Symbol.toStringTag property to mimic a Promise's structure
-  [Symbol.toStringTag]: 'Promise';
-};
-
-/**
- * Defines the props for the FaqPage component and generateMetadata function.
- * Uses an intersection type to satisfy the TypeScript compiler's demand
- * for PromiseLike properties on 'params', including Symbol.toStringTag,
- * without altering runtime behavior.
- */
-interface FaqPageProps {
-  params: { slug: string } & PromiseLikeStructural<any>;
-  // If you also use searchParams in your page or metadata, you might need to add:
-  // searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 const query = groq`*[_type == "faq" && slug.current == $slug][0] {
@@ -79,13 +49,19 @@ const relatedQuery = groq`*[_type == "faq" && references(^._id) == false && coun
 }`
 
 export async function generateMetadata(
-  props: FaqPageProps, // Now correctly typed with the workaround
+  { params }: { params: { slug: string } },
   _parent?: ResolvingMetadata
 ): Promise<Metadata> {
-  // Accessing params remains the same, as it's a plain object at runtime
-  const { slug } = props.params
-  const faq: Faq = await client.fetch(query, { slug })
+  const { slug } = params
+  const faq: Faq | null = await client.fetch(query, { slug })
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
+
+  if (!faq) {
+    return {
+      title: 'FAQ not found – Upsum',
+      description: 'The requested FAQ could not be found.',
+    }
+  }
 
   return {
     title: `${faq.question} – Upsum`,
@@ -105,10 +81,10 @@ export async function generateMetadata(
   }
 }
 
-export default async function FaqPage(props: FaqPageProps) {
-  // Accessing params remains the same, as it's a plain object at runtime
-  const { slug } = props.params
+export default async function FaqPage({ params }: { params: { slug: string } }) {
+  const { slug } = params
   const faq: Faq = await client.fetch(query, { slug })
+  if (!faq) return notFound()
   const relatedFaqs: Faq[] = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
