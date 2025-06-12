@@ -20,6 +20,88 @@ export default async function HomePage() {
   const faqs = await client.fetch(query)
 
   return (
+    <>
+      {/* Website and Organization Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://upsum-site.vercel.app/#website",
+            "url": "https://upsum-site.vercel.app",
+            "name": "Upsum",
+            "description": "Quick answers to your questions through structured Q&A content",
+            "inLanguage": "en-US",
+            "publisher": {
+              "@type": "Organization",
+              "@id": "https://upsum-site.vercel.app/#organization",
+              "name": "Harpoon Productions Ltd",
+              "alternateName": "Upsum",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://upsum-site.vercel.app/upsum.png"
+              }
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://upsum-site.vercel.app/?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          })
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "@id": "https://upsum-site.vercel.app/#organization",
+            "name": "Harpoon Productions Ltd",
+            "alternateName": "Upsum",
+            "url": "https://upsum-site.vercel.app",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://upsum-site.vercel.app/upsum.png"
+            },
+            "description": "Quick answers to your questions through structured Q&A content",
+            "foundingDate": "2025",
+            "sameAs": []
+          })
+        }}
+      />
+
+      {/* FAQPage Schema for the collection */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "@id": "https://upsum-site.vercel.app/#faqpage",
+            "url": "https://upsum-site.vercel.app",
+            "name": "Upsum - Quick Answers to Your Questions",
+            "description": "Find answers to frequently asked questions with Upsum's structured Q&A format",
+            "inLanguage": "en-US",
+            "isPartOf": {
+              "@type": "WebSite",
+              "@id": "https://upsum-site.vercel.app/#website"
+            },
+            "mainEntity": faqs.slice(0, 5).map((faq: any) => ({
+              "@type": "Question",
+              "name": faq.question,
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.summaryForAI || "Detailed answer available on the page.",
+                "url": `https://upsum-site.vercel.app/faqs/${faq.slug.current}`
+              }
+            }))
+          })
+        }}
+      />
+
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header Section */}
       <div className="pt-16 pb-8 px-4">
@@ -159,5 +241,6 @@ export default async function HomePage() {
         </div>
       </footer>
     </div>
+    </>
   )
 }

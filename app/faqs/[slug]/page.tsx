@@ -66,18 +66,35 @@ export async function generateMetadata(
 
   return {
     title: `${faq.question} – Upsum`,
-    description: faq.summaryForAI || 'A structured answer from Upsum',
+    description: faq.summaryForAI || `Find the answer to: ${faq.question}. Quick, accurate answers from Upsum.`,
+    keywords: faq.tags?.join(', '),
     alternates: {
       canonical: faqUrl,
     },
     openGraph: {
       title: `${faq.question} – Upsum`,
-      description: faq.summaryForAI || '',
+      description: faq.summaryForAI || `Find the answer to: ${faq.question}`,
       url: faqUrl,
+      siteName: 'Upsum',
       images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
+      type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
+      title: `${faq.question} – Upsum`,
+      description: faq.summaryForAI || `Find the answer to: ${faq.question}`,
+      images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
   }
 }
@@ -90,6 +107,135 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
   return (
+    <>
+      {/* Enhanced JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "QAPage",
+            "@id": faqUrl,
+            "url": faqUrl,
+            "name": faq.question,
+            "description": faq.summaryForAI || `Find the answer to: ${faq.question}`,
+            "inLanguage": "en-US",
+            "datePublished": new Date().toISOString(),
+            "dateModified": new Date().toISOString(),
+            "isPartOf": {
+              "@type": "WebSite",
+              "@id": "https://upsum-site.vercel.app/#website",
+              "url": "https://upsum-site.vercel.app",
+              "name": "Upsum",
+              "description": "Quick answers to your questions",
+              "publisher": {
+                "@type": "Organization",
+                "@id": "https://upsum-site.vercel.app/#organization",
+                "name": "Harpoon Productions Ltd",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://upsum-site.vercel.app/upsum.png"
+                }
+              }
+            },
+            "mainEntity": {
+              "@type": "Question",
+              "@id": `${faqUrl}#question`,
+              "name": faq.question,
+              "text": faq.question,
+              "answerCount": 1,
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "@id": `${faqUrl}#answer`,
+                "text": faq.summaryForAI || "Detailed answer provided on the page.",
+                "dateCreated": new Date().toISOString(),
+                "upvoteCount": 0,
+                "author": {
+                  "@type": "Organization",
+                  "@id": "https://upsum-site.vercel.app/#organization",
+                  "name": "Upsum"
+                }
+              }
+            },
+            "author": {
+              "@type": "Organization",
+              "@id": "https://upsum-site.vercel.app/#organization",
+              "name": "Upsum"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "@id": "https://upsum-site.vercel.app/#organization",
+              "name": "Harpoon Productions Ltd",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://upsum-site.vercel.app/upsum.png"
+              }
+            },
+            ...(faq.image?.asset?.url && {
+              "primaryImageOfPage": {
+                "@type": "ImageObject",
+                "url": faq.image.asset.url,
+                "caption": faq.image.alt || faq.question
+              }
+            }),
+            ...(faq.tags?.length && {
+              "keywords": faq.tags.join(", "),
+              "about": faq.tags.map(tag => ({
+                "@type": "Thing",
+                "name": tag
+              }))
+            })
+          })
+        }}
+      />
+
+      {/* Organization Schema for Brand Recognition */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "@id": "https://upsum-site.vercel.app/#organization",
+            "name": "Harpoon Productions Ltd",
+            "alternateName": "Upsum",
+            "url": "https://upsum-site.vercel.app",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://upsum-site.vercel.app/upsum.png"
+            },
+            "description": "Quick answers to your questions through structured Q&A content",
+            "foundingDate": "2025",
+            "sameAs": []
+          })
+        }}
+      />
+
+      {/* BreadcrumbList for Navigation Context */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://upsum-site.vercel.app"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "FAQ",
+                "item": faqUrl
+              }
+            ]
+          })
+        }}
+      />
+
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header Section - Matching Front Page Exactly */}
       <div className="pt-16 pb-8 px-4">
