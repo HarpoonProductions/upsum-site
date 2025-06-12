@@ -94,9 +94,15 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
       {/* Header Section - Matching Front Page Exactly */}
       <div className="pt-16 pb-8 px-4">
         <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent mb-4">
-            Upsum
-          </h1>
+          <Link href="/" className="inline-block">
+            <Image
+              src="/upsum.png"
+              alt="Upsum"
+              width={200}
+              height={80}
+              className="mx-auto mb-4"
+            />
+          </Link>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto">
             Quick answers to your questions
           </p>
@@ -287,6 +293,22 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
           </div>
         </div>
       </footer>
+
+      {/* "Powered by Upsum" Footer */}
+      <div className="bg-slate-50 border-t border-slate-200 py-6">
+        <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
+          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+            <span>Powered by</span>
+            <Image
+              src="/upsum.png"
+              alt="Upsum"
+              width={60}
+              height={24}
+              className="opacity-70"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
