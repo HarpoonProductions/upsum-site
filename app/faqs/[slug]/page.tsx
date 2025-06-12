@@ -98,8 +98,8 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
             <Image
               src="/upsum.png"
               alt="Upsum"
-              width={200}
-              height={80}
+              width={400}
+              height={120}
               className="mx-auto mb-4"
             />
           </Link>
