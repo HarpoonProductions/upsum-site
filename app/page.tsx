@@ -22,8 +22,8 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header Section */}
-      <div className="pt-16 pb-8 px-6">
-        <div className="max-w-[2000px] mx-auto text-center">
+      <div className="pt-16 pb-8 px-4">
+        <div className="container mx-auto text-center" style={{ maxWidth: '1400px' }}>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent mb-4">
             Upsum
           </h1>
@@ -34,8 +34,8 @@ export default async function HomePage() {
       </div>
 
       {/* Articles Grid */}
-      <div className="max-w-[2000px] mx-auto px-6 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 lg:gap-16 xl:gap-20">
+      <div className="container mx-auto px-4 pb-16" style={{ maxWidth: '1400px' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {faqs.map((faq: any, index: number) => {
             const imageUrl = faq.image?.asset?.url
               ? urlFor(faq.image).width(500).height(300).fit('crop').url()
@@ -53,7 +53,7 @@ export default async function HomePage() {
                   href={`/faqs/${faq.slug.current}`}
                   className="block relative overflow-hidden group"
                 >
-                  <div className="relative h-80 md:h-96 overflow-hidden">
+                  <div className="relative h-64 md:h-72 overflow-hidden">
                     <Image
                       src={imageUrl}
                       alt={faq.question}
