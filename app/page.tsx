@@ -48,21 +48,38 @@ export default async function HomePage() {
                   index === 0 ? 'md:col-span-2 xl:col-span-1' : ''
                 }`}
               >
-                {/* Clickable Image Container */}
+                {/* Clickable Image Container with Overlay */}
                 <Link
                   href={`/faqs/${faq.slug.current}`}
-                  className="block relative overflow-hidden"
+                  className="block relative overflow-hidden group"
                 >
                   <div className="relative h-64 md:h-72 overflow-hidden">
                     <Image
                       src={imageUrl}
                       alt={faq.question}
                       fill
-                      className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-105"
+                      className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    {/* Dark gradient overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    
+                    {/* Text overlay */}
+                    <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
+                      {/* Timestamp */}
+                      <div className="mb-3">
+                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-medium">
+                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                          Latest
+                        </span>
+                      </div>
+                      
+                      {/* Question Title */}
+                      <h2 className="text-xl md:text-2xl font-bold text-white leading-tight group-hover:text-blue-200 transition-colors duration-300">
+                        {faq.question}
+                      </h2>
+                    </div>
                     
                     {/* Hover indicator */}
                     <div className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
@@ -75,16 +92,6 @@ export default async function HomePage() {
 
                 {/* Content Section */}
                 <div className="p-6 md:p-8">
-                  {/* Clickable Headline */}
-                  <Link
-                    href={`/faqs/${faq.slug.current}`}
-                    className="block mb-4 group/title"
-                  >
-                    <h2 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight group-hover/title:text-blue-600 transition-colors duration-300 hover:underline decoration-2 underline-offset-4">
-                      {faq.question}
-                    </h2>
-                  </Link>
-
                   {/* Summary */}
                   {faq.summaryForAI && (
                     <p className="text-slate-600 leading-relaxed line-clamp-3 mb-6">
