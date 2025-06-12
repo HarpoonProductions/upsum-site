@@ -25,10 +25,10 @@ export default async function HomePage() {
       <div className="pt-16 pb-8 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent mb-4">
-            Latest Questions
+            Upsum
           </h1>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Discover insights and answers from our curated FAQ collection
+            Quick answers to your questions
           </p>
         </div>
       </div>
