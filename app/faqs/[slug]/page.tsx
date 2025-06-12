@@ -90,14 +90,14 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 text-white">
-        <div className="max-w-4xl mx-auto px-6 py-12">
+      {/* Header Section - Matching Front Page */}
+      <div className="pt-16 pb-8 px-4">
+        <div className="max-w-7xl mx-auto">
           {/* Navigation */}
           <div className="mb-8">
             <Link 
-              href="/faqs" 
-              className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition-colors duration-200 group text-sm font-medium"
+              href="/" 
+              className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors duration-200 group text-sm font-medium"
             >
               <svg className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -106,20 +106,25 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
             </Link>
           </div>
 
-          {/* Brand */}
-          <div className="mb-8">
+          {/* Brand - Matching Front Page */}
+          <div className="text-center mb-8">
             <Link href="/" className="inline-block">
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2">
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent mb-4">
                 Upsum
               </h1>
-              <p className="text-slate-300 text-lg">
-                Explaining the news through structured questions and answers
+              <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+                Quick answers to your questions
               </p>
             </Link>
           </div>
+        </div>
+      </div>
 
+      {/* Question Section */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 text-white">
+        <div className="max-w-4xl mx-auto px-6 py-12">
           {/* Main Question */}
-          <h2 className="text-2xl md:text-4xl font-bold leading-tight">
+          <h2 className="text-2xl md:text-4xl font-bold leading-tight text-center">
             {faq.question}
           </h2>
         </div>
@@ -263,7 +268,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
             <div className="mb-6">
               <h4 className="text-2xl font-bold text-white mb-2">Upsum</h4>
               <p className="text-lg">
-                A platform for explaining the news through structured questions and answers
+                Quick answers to your questions
               </p>
             </div>
             <div className="border-t border-slate-800 pt-6">
