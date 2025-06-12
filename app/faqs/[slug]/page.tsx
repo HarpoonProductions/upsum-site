@@ -107,7 +107,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
   const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Enhanced JSON-LD Structured Data */}
       <script
         type="application/ld+json"
@@ -235,8 +235,6 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
           })
         }}
       />
-
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header Section - Matching Front Page Exactly */}
       <div className="pt-16 pb-8 px-4">
         <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
