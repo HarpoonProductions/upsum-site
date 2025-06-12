@@ -135,14 +135,17 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
         {/* Featured Image */}
         {faq.image?.asset?.url && (
           <div className="mb-12 -mt-20 relative z-10">
-            <div className="rounded-3xl overflow-hidden shadow-2xl bg-white p-2">
-              <Image
-                src={faq.image.asset.url}
-                alt={faq.image.alt || faq.question}
-                width={800}
-                height={450}
-                className="rounded-2xl w-full h-auto object-cover"
-              />
+            <div className="rounded-3xl overflow-hidden shadow-2xl bg-white p-2 max-w-4xl mx-auto">
+              <div className="relative w-full max-h-[600px] overflow-hidden rounded-2xl">
+                <Image
+                  src={faq.image.asset.url}
+                  alt={faq.image.alt || faq.question}
+                  width={800}
+                  height={450}
+                  className="w-full h-auto object-cover max-h-[600px]"
+                  style={{ objectPosition: 'center' }}
+                />
+              </div>
             </div>
           </div>
         )}
