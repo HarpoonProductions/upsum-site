@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { PortableText } from '@portabletext/react'
 import { Metadata, ResolvingMetadata } from 'next'
 import { notFound } from 'next/navigation'
+import { urlFor } from '@/lib/sanity'
 
 interface Faq {
   _id: string
@@ -90,175 +91,179 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Header Section - Matching Front Page */}
+      {/* Header Section - Matching Front Page Exactly */}
       <div className="pt-16 pb-8 px-4">
-        <div className="max-w-7xl mx-auto">
-          {/* Navigation */}
-          <div className="mb-8">
-            <Link 
-              href="/" 
-              className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors duration-200 group text-sm font-medium"
-            >
-              <svg className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to all FAQs
-            </Link>
-          </div>
-
-          {/* Brand - Matching Front Page */}
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-block">
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent mb-4">
-                Upsum
-              </h1>
-              <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-                Quick answers to your questions
-              </p>
-            </Link>
-          </div>
+        <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent mb-4">
+            Upsum
+          </h1>
+          <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+            Quick answers to your questions
+          </p>
         </div>
       </div>
 
-      {/* Question Section */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 text-white">
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          {/* Main Question */}
-          <h2 className="text-2xl md:text-4xl font-bold leading-tight text-center">
-            {faq.question}
-          </h2>
-        </div>
+      {/* Navigation */}
+      <div className="container mx-auto px-4 mb-8" style={{ maxWidth: '1600px' }}>
+        <Link 
+          href="/" 
+          className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors duration-200 group text-sm font-medium"
+        >
+          <svg className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to all FAQs
+        </Link>
       </div>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        {/* Featured Image */}
-        {faq.image?.asset?.url && (
-          <div className="mb-12 -mt-20 relative z-10">
-            <div className="rounded-3xl overflow-hidden shadow-2xl bg-white p-2 max-w-4xl mx-auto">
-              <div className="relative w-full max-h-[600px] overflow-hidden rounded-2xl">
-                <Image
-                  src={faq.image.asset.url}
-                  alt={faq.image.alt || faq.question}
-                  width={800}
-                  height={450}
-                  className="w-full h-auto object-cover max-h-[600px]"
-                  style={{ objectPosition: 'center' }}
-                />
+      {/* Main Content Card */}
+      <main className="container mx-auto px-4 pb-16" style={{ maxWidth: '1600px' }}>
+        <article className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden mb-12">
+          {/* Hero Image with Question Overlay */}
+          {faq.image?.asset?.url && (
+            <div className="relative h-80 md:h-96 overflow-hidden">
+              <Image
+                src={faq.image?.asset?.url ? urlFor(faq.image).width(1200).height(600).fit('crop').url() : '/fallback.jpg'}
+                alt={faq.image.alt || faq.question}
+                fill
+                className="object-cover"
+              />
+              
+              {/* Dark gradient overlay for text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              
+              {/* Question overlay */}
+              <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end">
+                <div className="mb-4">
+                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    Question & Answer
+                  </span>
+                </div>
+                <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight max-w-4xl">
+                  {faq.question}
+                </h2>
+              </div>
+            </div>
+          )}
+
+          {/* Content Section */}
+          <div className="p-8 md:p-12">
+            {/* If no image, show question as heading */}
+            {!faq.image?.asset?.url && (
+              <div className="mb-8">
+                <div className="mb-4">
+                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-700 text-sm font-medium">
+                    <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
+                    Question & Answer
+                  </span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-800 leading-tight">
+                  {faq.question}
+                </h2>
+              </div>
+            )}
+
+            {/* Answer Content */}
+            <div className="prose prose-lg prose-slate max-w-none mb-12">
+              <PortableText value={faq.answer} />
+            </div>
+
+            {/* Citation Box */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-900 mb-2 text-lg">How to cite this page</h3>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    "{faq.question}." <em className="font-medium">Upsum</em>. Available at:{' '}
+                    <a 
+                      href={faqUrl} 
+                      className="text-blue-600 hover:text-blue-700 underline decoration-2 underline-offset-2 transition-colors duration-200 break-all"
+                    >
+                      {faqUrl}
+                    </a>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        )}
-
-        {/* Article Content */}
-        <article className="bg-white rounded-3xl shadow-lg p-8 md:p-12 mb-12">
-          <div className="prose prose-lg prose-slate max-w-none">
-            <PortableText value={faq.answer} />
-          </div>
         </article>
 
-        {/* Citation Box */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-12">
-          <div className="flex items-start gap-4">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-semibold text-blue-900 mb-2 text-lg">How to cite this page</h3>
-              <p className="text-sm text-slate-700 leading-relaxed">
-                "{faq.question}." <em className="font-medium">Upsum</em>. Available at:{' '}
-                <a 
-                  href={faqUrl} 
-                  className="text-blue-600 hover:text-blue-700 underline decoration-2 underline-offset-2 transition-colors duration-200 break-all"
-                >
-                  {faqUrl}
-                </a>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Related Questions */}
+        {/* Related Questions - Card Style */}
         {relatedFaqs?.length > 0 && (
-          <section className="mt-16">
+          <section>
             <div className="text-center mb-12">
               <h3 className="text-3xl font-bold text-slate-800 mb-4">Related Questions</h3>
               <p className="text-slate-600 text-lg">Explore more topics that might interest you</p>
             </div>
 
-            {/* Desktop Grid */}
-            <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {relatedFaqs.map((related, index) => (
-                <Link
-                  key={related._id}
-                  href={`/faqs/${related.slug.current}`}
-                  className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
-                >
-                  {related.image?.asset?.url && (
-                    <div className="relative h-48 overflow-hidden">
-                      <Image
-                        src={related.image.asset.url}
-                        alt={related.question}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <h4 className="text-lg font-semibold text-slate-800 mb-3 leading-tight group-hover:text-blue-600 transition-colors duration-200">
-                      {related.question}
-                    </h4>
-                    {related.summaryForAI && (
-                      <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed">
-                        {related.summaryForAI}
-                      </p>
-                    )}
-                    <div className="mt-4 flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors duration-200">
-                      Read more
-                      <svg className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {relatedFaqs.map((related) => {
+                const imageUrl = related.image?.asset?.url
+                  ? urlFor(related.image).width(500).height(300).fit('crop').url()
+                  : '/fallback.jpg'
 
-            {/* Mobile Horizontal Scroll */}
-            <div className="sm:hidden">
-              <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-                {relatedFaqs.map((related) => (
+                return (
                   <Link
                     key={related._id}
                     href={`/faqs/${related.slug.current}`}
-                    className="flex-shrink-0 w-72 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                    className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden"
                   >
-                    {related.image?.asset?.url && (
-                      <div className="relative h-40 overflow-hidden">
-                        <Image
-                          src={related.image.asset.url}
-                          alt={related.question}
-                          fill
-                          className="object-cover"
-                        />
+                    {/* Image with overlay - matching front page style */}
+                    <div className="relative h-64 overflow-hidden">
+                      <Image
+                        src={imageUrl}
+                        alt={related.question}
+                        fill
+                        className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
+                      />
+                      
+                      {/* Dark gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      
+                      {/* Text overlay */}
+                      <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                        <div className="mb-3">
+                          <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-medium">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                            Related
+                          </span>
+                        </div>
+                        <h4 className="text-lg font-bold text-white leading-tight group-hover:text-blue-200 transition-colors duration-300">
+                          {related.question}
+                        </h4>
                       </div>
-                    )}
-                    <div className="p-5">
-                      <h4 className="text-lg font-semibold text-slate-800 mb-2 leading-tight">
-                        {related.question}
-                      </h4>
+                      
+                      {/* Hover indicator */}
+                      <div className="absolute top-4 right-4 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        <svg className="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6">
                       {related.summaryForAI && (
-                        <p className="text-sm text-slate-600 line-clamp-2">
+                        <p className="text-slate-600 leading-relaxed line-clamp-3 mb-4">
                           {related.summaryForAI}
                         </p>
                       )}
+                      <div className="flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors duration-200">
+                        Read answer
+                        <svg className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </div>
                     </div>
                   </Link>
-                ))}
-              </div>
+                )
+              })}
             </div>
           </section>
         )}
@@ -266,7 +271,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-300 mt-20">
-        <div className="max-w-4xl mx-auto px-6 py-12">
+        <div className="container mx-auto px-6 py-12" style={{ maxWidth: '1600px' }}>
           <div className="text-center">
             <div className="mb-6">
               <h4 className="text-2xl font-bold text-white mb-2">Upsum</h4>
