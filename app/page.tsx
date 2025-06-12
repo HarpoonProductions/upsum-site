@@ -20,7 +20,7 @@ export default async function HomePage() {
   const faqs = await client.fetch(query)
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Website and Organization Structured Data */}
       <script
         type="application/ld+json"
@@ -101,8 +101,6 @@ export default async function HomePage() {
           })
         }}
       />
-
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header Section */}
       <div className="pt-16 pb-8 px-4">
         <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
@@ -241,6 +239,5 @@ export default async function HomePage() {
         </div>
       </footer>
     </div>
-    </>
   )
 }
