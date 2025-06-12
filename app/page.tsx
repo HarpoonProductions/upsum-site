@@ -23,7 +23,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header Section */}
       <div className="pt-16 pb-8 px-4">
-        <div className="max-w-8xl mx-auto text-center">
+        <div className="max-w-[1600px] mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent mb-4">
             Upsum
           </h1>
@@ -34,8 +34,8 @@ export default async function HomePage() {
       </div>
 
       {/* Articles Grid */}
-      <div className="max-w-8xl mx-auto px-4 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 lg:gap-12">
+      <div className="max-w-[1600px] mx-auto px-4 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 lg:gap-16">
           {faqs.map((faq: any, index: number) => {
             const imageUrl = faq.image?.asset?.url
               ? urlFor(faq.image).width(500).height(300).fit('crop').url()
