@@ -55,33 +55,33 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params
   const faq: Faq | null = await client.fetch(query, { slug })
-  const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
+  const faqUrl = `https://upffaqs.com/faqs/${slug}`
 
   if (!faq) {
     return {
-      title: 'FAQ not found – Upsum',
+      title: 'FAQ not found – UPF FAQs',
       description: 'The requested FAQ could not be found.',
     }
   }
 
   return {
-    title: `${faq.question} – Upsum`,
+    title: `${faq.question} – UPF FAQs`,
     description: faq.summaryForAI || `Find the answer to: ${faq.question}. Quick, accurate answers from Upsum.`,
     keywords: faq.tags?.join(', '),
     alternates: {
       canonical: faqUrl,
     },
     openGraph: {
-      title: `${faq.question} – Upsum`,
+      title: `${faq.question} – UPF FAQs`,
       description: faq.summaryForAI || `Find the answer to: ${faq.question}`,
       url: faqUrl,
-      siteName: 'Upsum',
+      siteName: 'UPF FAQs',
       images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
       type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${faq.question} – Upsum`,
+      title: `${faq.question} – UPF FAQs`,
       description: faq.summaryForAI || `Find the answer to: ${faq.question}`,
       images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
     },
@@ -104,7 +104,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
   const faq: Faq = await client.fetch(query, { slug })
   if (!faq) return notFound()
   const relatedFaqs: Faq[] = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
-  const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
+  const faqUrl = `https://upffaqs.com/faqs/${slug}`
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -124,17 +124,17 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
             "dateModified": new Date().toISOString(),
             "isPartOf": {
               "@type": "WebSite",
-              "@id": "https://upsum-site.vercel.app/#website",
-              "url": "https://upsum-site.vercel.app",
-              "name": "Upsum",
+              "@id": "https://upffaqs.com/#website",
+              "url": "https://upffaqs.com",
+              "name": "UPF FAQs",
               "description": "Quick answers to your questions",
               "publisher": {
                 "@type": "Organization",
-                "@id": "https://upsum-site.vercel.app/#organization",
+                "@id": "https://upffaqs.com/#organization",
                 "name": "Harpoon Productions Ltd",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://upsum-site.vercel.app/upsum.png"
+                  "url": "https://upffaqs.com/upffaqs.png"
                 }
               }
             },
@@ -152,23 +152,23 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                 "upvoteCount": 0,
                 "author": {
                   "@type": "Organization",
-                  "@id": "https://upsum-site.vercel.app/#organization",
-                  "name": "Upsum"
+                  "@id": "https://upffaqs.com/#organization",
+                  "name": "UPF FAQs"
                 }
               }
             },
             "author": {
               "@type": "Organization",
-              "@id": "https://upsum-site.vercel.app/#organization",
-              "name": "Upsum"
+              "@id": "https://upffaqs.com/#organization",
+              "name": "UPF FAQs"
             },
             "publisher": {
               "@type": "Organization",
-              "@id": "https://upsum-site.vercel.app/#organization",
+              "@id": "https://upffaqs.com/#organization",
               "name": "Harpoon Productions Ltd",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://upsum-site.vercel.app/upsum.png"
+                "url": "https://upffaqs.com/upffaqs.png"
               }
             },
             ...(faq.image?.asset?.url && {
@@ -196,13 +196,13 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            "@id": "https://upsum-site.vercel.app/#organization",
+            "@id": "https://upffaqs.com/#organization",
             "name": "Harpoon Productions Ltd",
-            "alternateName": "Upsum",
-            "url": "https://upsum-site.vercel.app",
+            "alternateName": "UPF FAQs",
+            "url": "https://upffaqs.com",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://upsum-site.vercel.app/upsum.png"
+              "url": "https://upffaqs.com/upffaqs.png"
             },
             "description": "Quick answers to your questions through structured Q&A content",
             "foundingDate": "2025",
@@ -223,7 +223,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://upsum-site.vercel.app"
+                "item": "https://upffaqs.com"
               },
               {
                 "@type": "ListItem",
@@ -240,8 +240,8 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
         <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
           <Link href="/" className="inline-block">
             <Image
-              src="/upsum.png"
-              alt="Upsum"
+              src="/upffaqs.png"
+              alt="UPF FAQs"
               width={400}
               height={120}
               className="mx-auto mb-4"
