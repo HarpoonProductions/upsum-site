@@ -110,34 +110,23 @@ export default async function HomePage() {
         }}
       />
 
-      {/* Hero Section - NEW! Matching the FAQ page style */}
-      <section className="relative h-96 flex items-center justify-center overflow-hidden">
-        {/* Background gradient - matching your orange/red theme */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-600 to-red-600"></div>
-        
-        {/* Optional: Add a subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSI0Ii8+PC9nPjwvZz48L3N2Zz4=')] bg-repeat"></div>
-        </div>
-        
-        {/* Content */}
-        <div className="relative z-10 text-center text-white px-4">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-            UPF FAQs
-          </h1>
-          <p className="text-xl md:text-2xl opacity-90 max-w-2xl mx-auto leading-relaxed">
+      {/* Header Section - Exactly matching FAQ page with PNG logo */}
+      <div className="pt-16 pb-8 px-4">
+        <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
+          <Link href="/" className="inline-block">
+            <Image
+              src="/upffaqs.png"
+              alt="UPF FAQs"
+              width={400}
+              height={120}
+              className="mx-auto mb-4"
+            />
+          </Link>
+          <p className="text-slate-600 text-lg max-w-2xl mx-auto">
             Quick answers to your ultra-processed food questions
           </p>
-          
-          {/* Optional: Add a subtle badge */}
-          <div className="mt-6">
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-              Your trusted UPF resource
-            </span>
-          </div>
         </div>
-      </section>
+      </div>
 
       {/* Articles Grid */}
       <div className="container mx-auto px-4 py-16" style={{ maxWidth: '1600px' }}>
@@ -253,4 +242,3 @@ export default async function HomePage() {
     </div>
   )
 }
-//update //
