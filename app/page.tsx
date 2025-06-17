@@ -7,22 +7,28 @@ import Image from 'next/image'
 import { urlFor } from '@/lib/sanity'
 
 export default async function HomePage() {
-  const query = groq`*[_type == "faq" && defined(slug.current)] | order(_createdAt desc)[0...10] {
+  const query = groq`*[_type == "faq" && defined(slug.current)] | order(publishedAt desc, _createdAt desc)[0...10] {
     _id,
     question,
     slug,
     summaryForAI,
+    keywords,
+    category->{
+      title
+    },
     image {
       asset -> {
         url
-      }
-    }
+      },
+      alt
+    },
+    publishedAt
   }`
 
   const faqs = await client.fetch(query)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
       {/* Website and Organization Structured Data */}
       <script
         type="application/ld+json"
@@ -39,7 +45,7 @@ export default async function HomePage() {
               "@type": "Organization",
               "@id": "https://upsum.info/#organization",
               "name": "Harpoon Productions Ltd",
-              "alternateName": "Upsum",
+              "alternateName": "UPF FAQs",
               "logo": {
                 "@type": "ImageObject",
                 "url": "https://upsum.info/upsum.png"
@@ -68,7 +74,7 @@ export default async function HomePage() {
               "@type": "ImageObject",
               "url": "https://upsum.info/upsum.png"
             },
-            "description": "Quick answers to your questions through structured Q&A content",
+            "description": "Quick answers to your ultra-processed food questions",
             "foundingDate": "2025",
             "sameAs": []
           })
@@ -109,15 +115,15 @@ export default async function HomePage() {
         <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
           <Link href="/" className="inline-block">
             <Image
-              src="/upsum.png"
-              alt="Upsum"
+              src="/upffaqs.png"
+              alt="UPF FAQs"
               width={400}
               height={120}
               className="mx-auto mb-4"
             />
           </Link>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Quick answers to your questions
+            Quick answers to your ultra-processed food questions
           </p>
         </div>
       </div>
@@ -133,9 +139,7 @@ export default async function HomePage() {
             return (
               <article
                 key={faq._id}
-                className={`group relative overflow-hidden rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 ${
-                  index === 0 ? 'md:col-span-2 xl:col-span-1' : ''
-                }`}
+                className="group relative overflow-hidden rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
               >
                 {/* Clickable Image Container with Overlay */}
                 <Link
@@ -145,7 +149,7 @@ export default async function HomePage() {
                   <div className="relative h-64 md:h-72 overflow-hidden">
                     <Image
                       src={imageUrl}
-                      alt={faq.question}
+                      alt={faq.image?.alt || faq.question}
                       fill
                       className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -160,12 +164,12 @@ export default async function HomePage() {
                       <div className="mb-3">
                         <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 backdrop-blur-sm rounded-full text-white text-xs font-medium">
                           <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                          Latest
+                          UPF Question
                         </span>
                       </div>
                       
                       {/* Question Title */}
-                      <h2 className="text-xl md:text-2xl font-bold text-white leading-tight group-hover:text-blue-200 transition-colors duration-300">
+                      <h2 className="text-xl md:text-2xl font-bold text-white leading-tight group-hover:text-orange-200 transition-colors duration-300">
                         {faq.question}
                       </h2>
                     </div>
@@ -191,7 +195,7 @@ export default async function HomePage() {
                   {/* Read More Link */}
                   <Link
                     href={`/faqs/${faq.slug.current}`}
-                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm group/link transition-colors duration-200"
+                    className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold text-sm group/link transition-colors duration-200"
                   >
                     Read full answer
                     <svg 
@@ -206,7 +210,7 @@ export default async function HomePage() {
                 </div>
 
                 {/* Subtle border effect */}
-                <div className="absolute inset-0 rounded-3xl ring-1 ring-slate-200/50 group-hover:ring-blue-300/50 transition-colors duration-300 pointer-events-none" />
+                <div className="absolute inset-0 rounded-3xl ring-1 ring-slate-200/50 group-hover:ring-orange-300/50 transition-colors duration-300 pointer-events-none" />
               </article>
             )
           })}
@@ -220,8 +224,8 @@ export default async function HomePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-slate-700 mb-2">No FAQs found</h3>
-            <p className="text-slate-500">Check back later for new questions and answers!</p>
+            <h3 className="text-xl font-semibold text-slate-700 mb-2">No UPF FAQs found</h3>
+            <p className="text-slate-500">Check back later for new questions and answers about ultra-processed foods!</p>
           </div>
         )}
       </div>

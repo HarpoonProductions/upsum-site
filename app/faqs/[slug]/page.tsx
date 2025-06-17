@@ -61,29 +61,29 @@ export async function generateMetadata(
 
   if (!faq) {
     return {
-      title: 'FAQ not found – Upsum',
+      title: 'FAQ not found – UPF FAQs',
       description: 'The requested FAQ could not be found.',
     }
   }
 
   return {
-    title: `${faq.question} – Upsum`,
+    title: `${faq.question} – UPF FAQs`,
     description: faq.summaryForAI || `Find the answer to: ${faq.question}. Quick, accurate answers from Upsum.`,
     keywords: faq.tags?.join(', '),
     alternates: {
       canonical: faqUrl,
     },
     openGraph: {
-      title: `${faq.question} – Upsum`,
+      title: `${faq.question} – UPF FAQs`,
       description: faq.summaryForAI || `Find the answer to: ${faq.question}`,
       url: faqUrl,
-      siteName: 'Upsum',
+      siteName: 'UPF FAQs',
       images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
       type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${faq.question} – Upsum`,
+      title: `${faq.question} – UPF FAQs`,
       description: faq.summaryForAI || `Find the answer to: ${faq.question}`,
       images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
     },
@@ -137,7 +137,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                 "logo": {
                   "@type": "ImageObject",
                   "url": "https://upsum.info/upsum.png"
-                }
+  }
               }
             },
             "mainEntity": {
@@ -156,6 +156,8 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                   "@type": "Organization",
                   "@id": "https://upsum.info/#organization",
                   "name": "Upsum"
+                  "@id": "https://upffaqs.com/#organization",
+                  "name": "UPF FAQs"
                 }
               }
             },
@@ -171,6 +173,17 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
               "logo": {
                 "@type": "ImageObject",
                 "url": "https://upsum.info/upsum.png"
+              "@id": "https://upffaqs.com/#organization",
+              "name": "UPF FAQs"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "@id": "https://upffaqs.com/#organization",
+              "name": "Harpoon Productions Ltd",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://upffaqs.com/upffaqs.png"
+>>>>>>> 096655c4310c00a2a916603769c74adb2b7e7a05
               }
             },
             ...(faq.image?.asset?.url && {
@@ -243,15 +256,15 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
         <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
           <Link href="/" className="inline-block">
             <Image
-              src="/upsum.png"
-              alt="Upsum"
+              src="/upffaqs.png"
+              alt="UPF FAQs"
               width={400}
               height={120}
               className="mx-auto mb-4"
             />
           </Link>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Quick answers to your questions
+            Quick answers to your ultra-processed food questions
           </p>
         </div>
       </div>
@@ -325,18 +338,18 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
             {/* Citation Box - Updated to blue theme */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
               <div className="flex items-start gap-4">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-blue-900 mb-2 text-lg">How to cite this page</h3>
+                  <h3 className="font-semibold text-orange-900 mb-2 text-lg">How to cite this page</h3>
                   <p className="text-sm text-slate-700 leading-relaxed">
                     "{faq.question}." <em className="font-medium">Upsum</em>. Available at:{' '}
                     <a 
                       href={faqUrl} 
-                      className="text-blue-600 hover:text-blue-700 underline decoration-2 underline-offset-2 transition-colors duration-200 break-all"
+                      className="text-orange-600 hover:text-orange-700 underline decoration-2 underline-offset-2 transition-colors duration-200 break-all"
                     >
                       {faqUrl}
                     </a>
@@ -387,7 +400,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                             Related
                           </span>
                         </div>
-                        <h4 className="text-lg font-bold text-white leading-tight group-hover:text-blue-200 transition-colors duration-300">
+                        <h4 className="text-lg font-bold text-white leading-tight group-hover:text-orange-200 transition-colors duration-300">
                           {related.question}
                         </h4>
                       </div>
@@ -407,7 +420,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                           {related.summaryForAI}
                         </p>
                       )}
-                      <div className="flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors duration-200">
+                      <div className="flex items-center text-orange-600 text-sm font-medium group-hover:text-orange-700 transition-colors duration-200">
                         Read answer
                         <svg className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
