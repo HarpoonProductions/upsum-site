@@ -230,12 +230,18 @@ export default async function HomePage() {
         )}
       </div>
 
-      {/* Footer with "Powered by Upsum" - FIXED! */}
+      {/* Footer with "Powered by Upsum" - Using PNG logo like FAQ pages */}
       <footer className="bg-orange-50 border-t border-orange-200 py-6">
         <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
           <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
             <span>Powered by</span>
-            <span className="font-semibold text-orange-600">Upsum</span>
+            <Image
+              src="/upsum.png"
+              alt="Upsum"
+              width={60}
+              height={24}
+              className="opacity-70"
+            />
           </div>
         </div>
       </footer>
