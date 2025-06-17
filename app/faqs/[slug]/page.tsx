@@ -1,3 +1,5 @@
+// Updated app/faqs/[slug]/page.tsx - Individual FAQ pages with consistent styling
+
 import { client } from '@/lib/sanity'
 import { groq } from 'next-sanity'
 import Image from 'next/image'
@@ -235,7 +237,8 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
           })
         }}
       />
-      {/* Header Section - Matching Front Page Exactly */}
+
+      {/* Header Section - Matching Homepage exactly */}
       <div className="pt-16 pb-8 px-4">
         <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
           <Link href="/" className="inline-block">
@@ -248,7 +251,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
             />
           </Link>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Quick answers to your questions
+            Quick answers to your ultra-processed food questions
           </p>
         </div>
       </div>
@@ -320,20 +323,20 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
             </div>
 
             {/* Citation Box */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-6">
               <div className="flex items-start gap-4">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-blue-900 mb-2 text-lg">How to cite this page</h3>
+                  <h3 className="font-semibold text-orange-900 mb-2 text-lg">How to cite this page</h3>
                   <p className="text-sm text-slate-700 leading-relaxed">
                     "{faq.question}." <em className="font-medium">Upsum</em>. Available at:{' '}
                     <a 
                       href={faqUrl} 
-                      className="text-blue-600 hover:text-blue-700 underline decoration-2 underline-offset-2 transition-colors duration-200 break-all"
+                      className="text-orange-600 hover:text-orange-700 underline decoration-2 underline-offset-2 transition-colors duration-200 break-all"
                     >
                       {faqUrl}
                     </a>
@@ -384,7 +387,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                             Related
                           </span>
                         </div>
-                        <h4 className="text-lg font-bold text-white leading-tight group-hover:text-blue-200 transition-colors duration-300">
+                        <h4 className="text-lg font-bold text-white leading-tight group-hover:text-orange-200 transition-colors duration-300">
                           {related.question}
                         </h4>
                       </div>
@@ -392,7 +395,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                       {/* Hover indicator */}
                       <div className="absolute top-4 right-4 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                         <svg className="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
                       </div>
                     </div>
@@ -404,7 +407,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                           {related.summaryForAI}
                         </p>
                       )}
-                      <div className="flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors duration-200">
+                      <div className="flex items-center text-orange-600 text-sm font-medium group-hover:text-orange-700 transition-colors duration-200">
                         Read answer
                         <svg className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -419,29 +422,10 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-300 mt-20">
-        <div className="container mx-auto px-6 py-12" style={{ maxWidth: '1600px' }}>
-          <div className="text-center">
-            <div className="mb-6">
-              <h4 className="text-2xl font-bold text-white mb-2">Upsum</h4>
-              <p className="text-lg">
-                Quick answers to your questions
-              </p>
-            </div>
-            <div className="border-t border-slate-800 pt-6">
-              <p className="text-sm">
-                Upsum is a trademark of <span className="font-medium text-white">Harpoon Productions Ltd.</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* "Powered by Upsum" Footer */}
-      <div className="bg-slate-50 border-t border-slate-200 py-6">
+      {/* Footer with "Powered by Upsum" - Consistent with homepage */}
+      <footer className="bg-orange-50 border-t border-orange-200 py-6">
         <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
-          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
             <span>Powered by</span>
             <Image
               src="/upsum.png"
@@ -451,8 +435,19 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
               className="opacity-70"
             />
           </div>
+          <p className="text-xs text-slate-400">
+            Upsum is a trademark of{' '}
+            <a 
+              href="https://harpoon.productions" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-slate-600 transition-colors duration-200"
+            >
+              Harpoon Productions
+            </a>
+          </p>
         </div>
-      </div>
+      </footer>
     </div>
   )
 }

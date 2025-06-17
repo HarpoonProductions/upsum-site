@@ -1,4 +1,4 @@
-// Updated app/page.tsx - Homepage with hero section and correct footer
+// Updated app/page.tsx - Homepage with consistent styling
 
 import groq from 'groq'
 import { client } from '@/lib/sanity'
@@ -129,7 +129,7 @@ export default async function HomePage() {
       </div>
 
       {/* Articles Grid */}
-      <div className="container mx-auto px-4 py-16" style={{ maxWidth: '1600px' }}>
+      <div className="container mx-auto px-4 pb-16" style={{ maxWidth: '1600px' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {faqs.map((faq: any, index: number) => {
             const imageUrl = faq.image?.asset?.url
@@ -230,10 +230,10 @@ export default async function HomePage() {
         )}
       </div>
 
-      {/* Footer with "Powered by Upsum" - Using PNG logo like FAQ pages */}
+      {/* Footer with "Powered by Upsum" - Using PNG logo */}
       <footer className="bg-orange-50 border-t border-orange-200 py-6">
         <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
-          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
             <span>Powered by</span>
             <Image
               src="/upsum.png"
@@ -243,6 +243,17 @@ export default async function HomePage() {
               className="opacity-70"
             />
           </div>
+          <p className="text-xs text-slate-400">
+            Upsum is a trademark of{' '}
+            <a 
+              href="https://harpoon.productions" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-slate-600 transition-colors duration-200"
+            >
+              Harpoon Productions
+            </a>
+          </p>
         </div>
       </footer>
     </div>
