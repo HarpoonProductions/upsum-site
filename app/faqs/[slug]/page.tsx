@@ -1,3 +1,5 @@
+// Updated app/faqs/[slug]/page.tsx - Main Upsum Individual FAQ pages with consistent styling
+
 import { client } from '@/lib/sanity'
 import { groq } from 'next-sanity'
 import Image from 'next/image'
@@ -55,7 +57,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params
   const faq: Faq | null = await client.fetch(query, { slug })
-  const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
+  const faqUrl = `https://upsum.info/faqs/${slug}`
 
   if (!faq) {
     return {
@@ -104,7 +106,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
   const faq: Faq = await client.fetch(query, { slug })
   if (!faq) return notFound()
   const relatedFaqs: Faq[] = faq.tags?.length ? await client.fetch(relatedQuery, { tags: faq.tags }) : []
-  const faqUrl = `https://upsum-site.vercel.app/faqs/${slug}`
+  const faqUrl = `https://upsum.info/faqs/${slug}`
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -124,17 +126,17 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
             "dateModified": new Date().toISOString(),
             "isPartOf": {
               "@type": "WebSite",
-              "@id": "https://upsum-site.vercel.app/#website",
-              "url": "https://upsum-site.vercel.app",
+              "@id": "https://upsum.info/#website",
+              "url": "https://upsum.info",
               "name": "Upsum",
               "description": "Quick answers to your questions",
               "publisher": {
                 "@type": "Organization",
-                "@id": "https://upsum-site.vercel.app/#organization",
+                "@id": "https://upsum.info/#organization",
                 "name": "Harpoon Productions Ltd",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://upsum-site.vercel.app/upsum.png"
+                  "url": "https://upsum.info/upsum.png"
                 }
               }
             },
@@ -152,23 +154,23 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                 "upvoteCount": 0,
                 "author": {
                   "@type": "Organization",
-                  "@id": "https://upsum-site.vercel.app/#organization",
+                  "@id": "https://upsum.info/#organization",
                   "name": "Upsum"
                 }
               }
             },
             "author": {
               "@type": "Organization",
-              "@id": "https://upsum-site.vercel.app/#organization",
+              "@id": "https://upsum.info/#organization",
               "name": "Upsum"
             },
             "publisher": {
               "@type": "Organization",
-              "@id": "https://upsum-site.vercel.app/#organization",
+              "@id": "https://upsum.info/#organization",
               "name": "Harpoon Productions Ltd",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://upsum-site.vercel.app/upsum.png"
+                "url": "https://upsum.info/upsum.png"
               }
             },
             ...(faq.image?.asset?.url && {
@@ -196,13 +198,13 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            "@id": "https://upsum-site.vercel.app/#organization",
+            "@id": "https://upsum.info/#organization",
             "name": "Harpoon Productions Ltd",
             "alternateName": "Upsum",
-            "url": "https://upsum-site.vercel.app",
+            "url": "https://upsum.info",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://upsum-site.vercel.app/upsum.png"
+              "url": "https://upsum.info/upsum.png"
             },
             "description": "Quick answers to your questions through structured Q&A content",
             "foundingDate": "2025",
@@ -223,7 +225,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://upsum-site.vercel.app"
+                "item": "https://upsum.info"
               },
               {
                 "@type": "ListItem",
@@ -235,7 +237,8 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
           })
         }}
       />
-      {/* Header Section - Matching Front Page Exactly */}
+
+      {/* Header Section - Matching Homepage with PNG logo */}
       <div className="pt-16 pb-8 px-4">
         <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
           <Link href="/" className="inline-block">
@@ -319,7 +322,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
               <PortableText value={faq.answer} />
             </div>
 
-            {/* Citation Box */}
+            {/* Citation Box - Updated to blue theme */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
               <div className="flex items-start gap-4">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
@@ -392,7 +395,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
                       {/* Hover indicator */}
                       <div className="absolute top-4 right-4 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                         <svg className="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
                       </div>
                     </div>
@@ -419,29 +422,10 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-300 mt-20">
-        <div className="container mx-auto px-6 py-12" style={{ maxWidth: '1600px' }}>
-          <div className="text-center">
-            <div className="mb-6">
-              <h4 className="text-2xl font-bold text-white mb-2">Upsum</h4>
-              <p className="text-lg">
-                Quick answers to your questions
-              </p>
-            </div>
-            <div className="border-t border-slate-800 pt-6">
-              <p className="text-sm">
-                Upsum is a trademark of <span className="font-medium text-white">Harpoon Productions Ltd.</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* "Powered by Upsum" Footer */}
-      <div className="bg-slate-50 border-t border-slate-200 py-6">
+      {/* Footer with "Powered by Upsum" - New consistent style */}
+      <footer className="bg-blue-50 border-t border-blue-200 py-6">
         <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
-          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
             <span>Powered by</span>
             <Image
               src="/upsum.png"
@@ -451,8 +435,19 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
               className="opacity-70"
             />
           </div>
+          <p className="text-xs text-blue-400">
+            Upsum is a trademark of{' '}
+            <a 
+              href="https://harpoon.productions" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-blue-600 transition-colors duration-200"
+            >
+              Harpoon Productions
+            </a>
+          </p>
         </div>
-      </div>
+      </footer>
     </div>
   )
 }

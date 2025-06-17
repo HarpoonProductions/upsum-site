@@ -1,3 +1,5 @@
+// Updated app/page.tsx - Main Upsum Homepage with consistent styling
+
 import groq from 'groq'
 import { client } from '@/lib/sanity'
 import Link from 'next/link'
@@ -28,24 +30,24 @@ export default async function HomePage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebSite",
-            "@id": "https://upsum-site.vercel.app/#website",
-            "url": "https://upsum-site.vercel.app",
+            "@id": "https://upsum.info/#website",
+            "url": "https://upsum.info",
             "name": "Upsum",
             "description": "Quick answers to your questions through structured Q&A content",
             "inLanguage": "en-US",
             "publisher": {
               "@type": "Organization",
-              "@id": "https://upsum-site.vercel.app/#organization",
+              "@id": "https://upsum.info/#organization",
               "name": "Harpoon Productions Ltd",
               "alternateName": "Upsum",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://upsum-site.vercel.app/upsum.png"
+                "url": "https://upsum.info/upsum.png"
               }
             },
             "potentialAction": {
               "@type": "SearchAction",
-              "target": "https://upsum-site.vercel.app/?q={search_term_string}",
+              "target": "https://upsum.info/?q={search_term_string}",
               "query-input": "required name=search_term_string"
             }
           })
@@ -58,13 +60,13 @@ export default async function HomePage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            "@id": "https://upsum-site.vercel.app/#organization",
+            "@id": "https://upsum.info/#organization",
             "name": "Harpoon Productions Ltd",
             "alternateName": "Upsum",
-            "url": "https://upsum-site.vercel.app",
+            "url": "https://upsum.info",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://upsum-site.vercel.app/upsum.png"
+              "url": "https://upsum.info/upsum.png"
             },
             "description": "Quick answers to your questions through structured Q&A content",
             "foundingDate": "2025",
@@ -80,14 +82,14 @@ export default async function HomePage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FAQPage",
-            "@id": "https://upsum-site.vercel.app/#faqpage",
-            "url": "https://upsum-site.vercel.app",
+            "@id": "https://upsum.info/#faqpage",
+            "url": "https://upsum.info",
             "name": "Upsum - Quick Answers to Your Questions",
             "description": "Find answers to frequently asked questions with Upsum's structured Q&A format",
             "inLanguage": "en-US",
             "isPartOf": {
               "@type": "WebSite",
-              "@id": "https://upsum-site.vercel.app/#website"
+              "@id": "https://upsum.info/#website"
             },
             "mainEntity": faqs.slice(0, 5).map((faq: any) => ({
               "@type": "Question",
@@ -95,13 +97,14 @@ export default async function HomePage() {
               "acceptedAnswer": {
                 "@type": "Answer",
                 "text": faq.summaryForAI || "Detailed answer available on the page.",
-                "url": `https://upsum-site.vercel.app/faqs/${faq.slug.current}`
+                "url": `https://upsum.info/faqs/${faq.slug.current}`
               }
             }))
           })
         }}
       />
-      {/* Header Section */}
+
+      {/* Header Section - Matching UPF style with PNG logo */}
       <div className="pt-16 pb-8 px-4">
         <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
           <Link href="/" className="inline-block">
@@ -155,7 +158,7 @@ export default async function HomePage() {
                     <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
                       {/* Timestamp */}
                       <div className="mb-3">
-                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-medium">
+                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 backdrop-blur-sm rounded-full text-white text-xs font-medium">
                           <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                           Latest
                         </span>
@@ -212,8 +215,8 @@ export default async function HomePage() {
         {/* Empty state */}
         {faqs.length === 0 && (
           <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 bg-slate-100 rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-24 h-24 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg className="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
               </svg>
             </div>
@@ -223,10 +226,10 @@ export default async function HomePage() {
         )}
       </div>
 
-      {/* Footer with "Powered by Upsum" */}
-      <footer className="bg-slate-50 border-t border-slate-200 py-6">
+      {/* Footer with "Powered by Upsum" - New consistent style */}
+      <footer className="bg-blue-50 border-t border-blue-200 py-6">
         <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
-          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
             <span>Powered by</span>
             <Image
               src="/upsum.png"
@@ -236,6 +239,17 @@ export default async function HomePage() {
               className="opacity-70"
             />
           </div>
+          <p className="text-xs text-blue-400">
+            Upsum is a trademark of{' '}
+            <a 
+              href="https://harpoon.productions" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-blue-600 transition-colors duration-200"
+            >
+              Harpoon Productions
+            </a>
+          </p>
         </div>
       </footer>
     </div>
