@@ -1,4 +1,4 @@
-// Update app/page.tsx - Homepage
+// Updated app/page.tsx - Homepage with hero section and correct footer
 
 import groq from 'groq'
 import { client } from '@/lib/sanity'
@@ -110,22 +110,37 @@ export default async function HomePage() {
         }}
       />
 
-      {/* Header Section */}
-      <div className="pt-16 pb-8 px-4">
-        <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
-          <Link href="/" className="inline-block">
-            <div className="mx-auto mb-4 text-6xl font-bold bg-gradient-to-r from-orange-600 via-red-500 to-orange-700 bg-clip-text text-transparent">
-              UPF FAQs
-            </div>
-          </Link>
-          <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+      {/* Hero Section - NEW! Matching the FAQ page style */}
+      <section className="relative h-96 flex items-center justify-center overflow-hidden">
+        {/* Background gradient - matching your orange/red theme */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-600 to-red-600"></div>
+        
+        {/* Optional: Add a subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSI0Ii8+PC9nPjwvZz48L3N2Zz4=')] bg-repeat"></div>
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 text-center text-white px-4">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+            UPF FAQs
+          </h1>
+          <p className="text-xl md:text-2xl opacity-90 max-w-2xl mx-auto leading-relaxed">
             Quick answers to your ultra-processed food questions
           </p>
+          
+          {/* Optional: Add a subtle badge */}
+          <div className="mt-6">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
+              Your trusted UPF resource
+            </span>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Articles Grid */}
-      <div className="container mx-auto px-4 pb-16" style={{ maxWidth: '1600px' }}>
+      <div className="container mx-auto px-4 py-16" style={{ maxWidth: '1600px' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {faqs.map((faq: any, index: number) => {
             const imageUrl = faq.image?.asset?.url
@@ -226,12 +241,12 @@ export default async function HomePage() {
         )}
       </div>
 
-      {/* Footer with "Powered by UPF FAQs" */}
+      {/* Footer with "Powered by Upsum" - FIXED! */}
       <footer className="bg-orange-50 border-t border-orange-200 py-6">
         <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
           <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
             <span>Powered by</span>
-            <span className="font-semibold text-orange-600">UPF FAQs</span>
+            <span className="font-semibold text-orange-600">Upsum</span>
           </div>
         </div>
       </footer>
