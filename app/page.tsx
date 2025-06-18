@@ -66,7 +66,7 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: SearchBoxProps) 
   }, [query, faqs]);
 
   // Highlight search terms
-  const highlightText = (text, searchTerm) => {
+  const highlightText = (text: string, searchTerm: string) => {
     if (!searchTerm) return text;
     
     const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
