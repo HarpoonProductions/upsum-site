@@ -9,8 +9,27 @@ import Image from 'next/image'
 import { urlFor } from '@/lib/sanity'
 import { useState, useEffect, useMemo } from 'react'
 
+// Type definitions
+interface FAQ {
+  _id: string;
+  question: string;
+  slug: { current: string };
+  summaryForAI?: string;
+  image?: {
+    asset?: {
+      url: string;
+    };
+  };
+}
+
+interface SearchBoxProps {
+  faqs: FAQ[];
+  onSuggestQuestion: (question?: string) => void;
+  theme?: 'blue' | 'orange';
+}
+
 // Search Component
-const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }) => {
+const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: SearchBoxProps) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -178,7 +197,23 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }) => {
 };
 
 // Suggest Question Modal Component
-const SuggestQuestionModal = ({ isOpen, onClose, theme = 'blue', siteName = 'Upsum', siteUrl = 'https://upsum.info', prefillQuestion = '' }) => {
+interface SuggestQuestionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  theme?: 'blue' | 'orange';
+  siteName?: string;
+  siteUrl?: string;
+  prefillQuestion?: string;
+}
+
+const SuggestQuestionModal = ({ 
+  isOpen, 
+  onClose, 
+  theme = 'blue', 
+  siteName = 'Upsum', 
+  siteUrl = 'https://upsum.info', 
+  prefillQuestion = '' 
+}: SuggestQuestionModalProps) => {
   const [formData, setFormData] = useState({
     question: '',
     email: '',
@@ -421,7 +456,7 @@ Timestamp: ${new Date().toISOString()}
 };
 
 export default function HomePage() {
-  const [faqs, setFaqs] = useState([]);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [prefillQuestion, setPrefillQuestion] = useState('');
 
@@ -439,7 +474,7 @@ export default function HomePage() {
         }
       }`;
       
-      const fetchedFaqs = await client.fetch(query);
+      const fetchedFaqs = await client.fetch<FAQ[]>(query);
       setFaqs(fetchedFaqs);
     };
 
