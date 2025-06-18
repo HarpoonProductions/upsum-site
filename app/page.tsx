@@ -264,7 +264,7 @@ const SuggestQuestionModal = ({
     return null;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Check rate limiting
@@ -320,7 +320,7 @@ Timestamp: ${new Date().toISOString()}
     }, 2500);
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
