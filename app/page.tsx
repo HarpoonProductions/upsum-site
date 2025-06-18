@@ -1,4 +1,4 @@
-// Updated app/page.tsx - Main Upsum Homepage with Search + Suggest Question Modal
+// Updated app/page.tsx - Main Upsum Homepage with Debug Logging
 
 'use client'
 
@@ -460,26 +460,54 @@ export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [prefillQuestion, setPrefillQuestion] = useState('');
 
+  // DEBUG VERSION - useEffect with detailed logging
   useEffect(() => {
+    console.log('🚀 Component mounting, starting fetch...');
+    
     const fetchFaqs = async () => {
-      const query = groq`*[_type == "faq" && defined(slug.current)] | order(_createdAt desc)[0...10] {
-        _id,
-        question,
-        slug,
-        summaryForAI,
-        image {
-          asset -> {
-            url
+      try {
+        console.log('🔍 Client config:', {
+          projectId: client.config().projectId,
+          dataset: client.config().dataset
+        });
+        
+        // Test the exact query we're using
+        const query = groq`*[_type == "faq" && defined(slug.current)] | order(_createdAt desc)[0...10] {
+          _id,
+          question,
+          slug,
+          summaryForAI,
+          image {
+            asset -> {
+              url
+            }
           }
-        }
-      }`;
-      
-      const fetchedFaqs = await client.fetch<FAQ[]>(query);
-      setFaqs(fetchedFaqs);
+        }`;
+        
+        console.log('📝 Running query:', query);
+        
+        const result = await client.fetch(query);
+        console.log('📊 Raw query result:', result);
+        console.log('📏 Result length:', result.length);
+        console.log('🎯 Setting faqs state with:', result);
+        
+        setFaqs(result);
+        
+        // Check state after setting
+        setTimeout(() => {
+          console.log('⏰ State check - faqs length should be:', result.length);
+        }, 100);
+        
+      } catch (error) {
+        console.error('❌ Fetch error:', error);
+      }
     };
 
     fetchFaqs();
   }, []);
+
+  // Debug: Log what we're rendering with
+  console.log('🎨 Rendering with faqs:', faqs.length, faqs);
 
   const handleSuggestQuestion = (questionText = '') => {
     setPrefillQuestion(questionText);
