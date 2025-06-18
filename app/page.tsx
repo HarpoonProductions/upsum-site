@@ -60,8 +60,8 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: SearchBoxProps) 
     
     const searchTerm = query.toLowerCase();
     return faqs.filter(faq => 
-      faq.question.toLowerCase().includes(searchTerm) ||
-      faq.summaryForAI?.toLowerCase().includes(searchTerm)
+      faq.question?.toLowerCase().includes(searchTerm) ||
+      (faq.summaryForAI && faq.summaryForAI.toLowerCase().includes(searchTerm))
     ).slice(0, 5); // Show max 5 results
   }, [query, faqs]);
 
