@@ -138,7 +138,6 @@ function RelatedFAQCard({ faq }: { faq: FAQ }) {
       href={`/faqs/${faq.slug.current}`}
       className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden block h-full"
     >
-      {/* Image with overlay - matching existing style */}
       <div className="relative h-64 overflow-hidden">
         <Image
           src={imageUrl}
@@ -147,10 +146,8 @@ function RelatedFAQCard({ faq }: { faq: FAQ }) {
           className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
         />
         
-        {/* Dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         
-        {/* Text overlay */}
         <div className="absolute inset-0 p-6 flex flex-col justify-end">
           <div className="mb-3">
             <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-medium">
@@ -163,7 +160,6 @@ function RelatedFAQCard({ faq }: { faq: FAQ }) {
           </h4>
         </div>
         
-        {/* Hover indicator */}
         <div className="absolute top-4 right-4 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
           <svg className="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -171,7 +167,6 @@ function RelatedFAQCard({ faq }: { faq: FAQ }) {
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-6 flex-1 flex flex-col">
         {faq.summaryForAI && (
           <p className="text-slate-600 leading-relaxed line-clamp-3 mb-4 flex-1">
@@ -181,4 +176,10 @@ function RelatedFAQCard({ faq }: { faq: FAQ }) {
         <div className="flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors duration-200 mt-auto">
           Read answer
           <svg className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </div>
+      </div>
+    </Link>
+  );
+}
