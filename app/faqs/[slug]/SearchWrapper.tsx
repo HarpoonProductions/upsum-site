@@ -1,439 +1,162 @@
-// Updated app/faqs/[slug]/page.tsx - Server component with client components imported
+// app/faqs/[slug]/FAQPageSearch.tsx - Client component for search on FAQ pages
 
-import { client } from '@/lib/sanity'
-import { groq } from 'next-sanity'
-import Image from 'next/image'
+'use client'
+
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { PortableText } from '@portabletext/react'
-import { Metadata, ResolvingMetadata } from 'next'
-import { notFound } from 'next/navigation'
-import { urlFor } from '@/lib/sanity'
-import CitationBox from './CitationBox'
-import RelatedFAQs from './RelatedFAQs'
 
-interface Faq {
-  _id: string
-  question: string
-  answer: any
-  slug: { current: string }
-  summaryForAI?: string
-  keywords?: string[]
-  category?: { title: string; slug: { current: string } }
-  publishedAt?: string
-  updatedAt?: string
-  author?: { name: string }
-  image?: {
-    asset?: {
-      _id: string
-      url: string
-    }
-    alt?: string
-  }
-  tags?: string[]
-  manualRelatedFAQs?: Faq[]
-  allFAQs?: Faq[]
-  searchFAQs?: Faq[]
+interface FAQ {
+  _id: string;
+  question: string;
+  slug: { current: string };
+  summaryForAI?: string;
 }
 
-// Updated query to include related FAQs data with null checks and search data
-const query = groq`*[_type == "faq" && slug.current == $slug][0] {
-  _id,
-  question,
-  answer,
-  slug,
-  summaryForAI,
-  keywords,
-  category->{
-    title,
-    slug
-  },
-  publishedAt,
-  updatedAt,
-  author->{
-    name
-  },
-  image {
-    asset->{
-      _id,
-      url
-    },
-    alt
-  },
-  tags,
-  "manualRelatedFAQs": relatedFAQs[defined(slug.current) && defined(question)]->{
-    _id,
-    question,
-    slug,
-    summaryForAI,
-    keywords,
-    category->{
-      title,
-      slug
-    },
-    image {
-      asset->{ url }
-    }
-  },
-  "allFAQs": *[_type == "faq" && _id != ^._id && defined(slug.current) && defined(question)]{
-    _id,
-    question,
-    slug,
-    summaryForAI,
-    keywords,
-    category->{
-      title,
-      slug
-    },
-    image {
-      asset->{ url }
-    }
-  },
-  "searchFAQs": *[_type == "faq" && defined(slug.current) && defined(question)]{
-    _id,
-    question,
-    slug,
-    summaryForAI
-  }
-}`
-
-export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> },
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const { slug } = await params
-  const faq: Faq | null = await client.fetch(query, { slug })
-  const faqUrl = `https://upsum.info/faqs/${slug}`
-
-  if (!faq) {
-    return {
-      title: 'FAQ not found – Upsum',
-      description: 'The requested FAQ could not be found.',
-    }
-  }
-
-  return {
-    title: `${faq.question} – Upsum`,
-    description: faq.summaryForAI || `Find the answer to: ${faq.question}. Quick, accurate answers from Upsum.`,
-    keywords: faq.tags?.join(', '),
-    alternates: {
-      canonical: faqUrl,
-    },
-    openGraph: {
-      title: `${faq.question} – Upsum`,
-      description: faq.summaryForAI || `Find the answer to: ${faq.question}`,
-      url: faqUrl,
-      siteName: 'Upsum',
-      images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
-      type: 'article',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${faq.question} – Upsum`,
-      description: faq.summaryForAI || `Find the answer to: ${faq.question}`,
-      images: faq.image?.asset?.url ? [faq.image.asset.url] : [],
-    },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-  }
+interface FAQPageSearchProps {
+  searchFAQs: FAQ[];
 }
 
-export default async function FaqPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  const faq: Faq = await client.fetch(query, { slug })
-  if (!faq) return notFound()
-  
-  const faqUrl = `https://upsum.info/faqs/${slug}`
+export default function FAQPageSearch({ searchFAQs }: FAQPageSearchProps) {
+  const [query, setQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Add safety checks for the FAQ data
-  const safeManualRelatedFAQs = (faq.manualRelatedFAQs || []).filter(relatedFaq => 
-    relatedFaq && 
-    relatedFaq.slug && 
-    relatedFaq.slug.current && 
-    relatedFaq.question
-  );
+  // Search logic with null safety
+  const searchResults = useMemo(() => {
+    if (!query.trim() || query.length < 2) return [];
+    
+    const searchTerm = query.toLowerCase();
+    
+    // Filter out FAQs with null/invalid slugs BEFORE searching
+    const validFaqs = searchFAQs.filter(faq => 
+      faq && 
+      faq.slug && 
+      faq.slug.current && 
+      faq.question
+    );
+    
+    return validFaqs.filter(faq => 
+      faq.question.toLowerCase().includes(searchTerm) ||
+      faq.summaryForAI?.toLowerCase().includes(searchTerm)
+    ).slice(0, 5); // Show max 5 results
+  }, [query, searchFAQs]);
 
-  const safeAllFAQs = (faq.allFAQs || []).filter(allFaq => 
-    allFaq && 
-    allFaq.slug && 
-    allFaq.slug.current && 
-    allFaq.question
-  );
+  // Highlight search terms
+  const highlightText = (text: string, searchTerm: string) => {
+    if (!searchTerm || !text) return text;
+    
+    const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
+    return parts.map((part, index) => 
+      part.toLowerCase() === searchTerm.toLowerCase() 
+        ? <mark key={index} className="bg-yellow-200 px-1 rounded">{part}</mark>
+        : part
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Enhanced JSON-LD Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "QAPage",
-            "@id": faqUrl,
-            "url": faqUrl,
-            "name": faq.question,
-            "description": faq.summaryForAI || `Find the answer to: ${faq.question}`,
-            "inLanguage": "en-US",
-            "datePublished": faq.publishedAt || new Date().toISOString(),
-            "dateModified": faq.updatedAt || new Date().toISOString(),
-            "isPartOf": {
-              "@type": "WebSite",
-              "@id": "https://upsum.info/#website",
-              "url": "https://upsum.info",
-              "name": "Upsum",
-              "description": "Quick answers to your questions",
-              "publisher": {
-                "@type": "Organization",
-                "@id": "https://upsum.info/#organization",
-                "name": "Harpoon Productions Ltd",
-                "logo": {
-                  "@type": "ImageObject",
-                  "url": "https://upsum.info/upsum.png"
-                }
-              }
-            },
-            "mainEntity": {
-              "@type": "Question",
-              "@id": `${faqUrl}#question`,
-              "name": faq.question,
-              "text": faq.question,
-              "answerCount": 1,
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "@id": `${faqUrl}#answer`,
-                "text": faq.summaryForAI || "Detailed answer provided on the page.",
-                "dateCreated": faq.publishedAt || new Date().toISOString(),
-                "upvoteCount": 0,
-                "author": {
-                  "@type": "Organization",
-                  "@id": "https://upsum.info/#organization",
-                  "name": "Upsum"
-                }
-              }
-            },
-            "author": {
-              "@type": "Organization",
-              "@id": "https://upsum.info/#organization",
-              "name": "Upsum"
-            },
-            "publisher": {
-              "@type": "Organization",
-              "@id": "https://upsum.info/#organization",
-              "name": "Harpoon Productions Ltd",
-              "logo": {
-                "@type": "ImageObject",
-                "url": "https://upsum.info/upsum.png"
-              }
-            },
-            ...(faq.image?.asset?.url && {
-              "primaryImageOfPage": {
-                "@type": "ImageObject",
-                "url": faq.image.asset.url,
-                "caption": faq.image.alt || faq.question
-              }
-            }),
-            ...(faq.tags?.length && {
-              "keywords": faq.tags.join(", "),
-              "about": faq.tags.map(tag => ({
-                "@type": "Thing",
-                "name": tag
-              }))
-            })
-          })
-        }}
-      />
-
-      {/* Organization Schema for Brand Recognition */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "@id": "https://upsum.info/#organization",
-            "name": "Harpoon Productions Ltd",
-            "alternateName": "Upsum",
-            "url": "https://upsum.info",
-            "logo": {
-              "@type": "ImageObject",
-              "url": "https://upsum.info/upsum.png"
-            },
-            "description": "Quick answers to your questions through structured Q&A content",
-            "foundingDate": "2025",
-            "sameAs": []
-          })
-        }}
-      />
-
-      {/* BreadcrumbList for Navigation Context */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-              {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Home",
-                "item": "https://upsum.info"
-              },
-              {
-                "@type": "ListItem",
-                "position": 2,
-                "name": "FAQ",
-                "item": faqUrl
-              }
-            ]
-          })
-        }}
-      />
-
-      {/* Header Section - Matching Homepage with PNG logo */}
-      <div className="pt-16 pb-8 px-4">
-        <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
-          <Link href="/" className="inline-block">
-            <Image
-              src="/upsum.png"
-              alt="Upsum"
-              width={400}
-              height={120}
-              className="mx-auto mb-4"
-            />
-          </Link>
-          <p className="text-slate-600 text-lg max-w-2xl mx-auto mb-8">
-            Quick answers to your questions
-          </p>
-          
-          {/* Search Box */}
-          <div className="mb-6">
-            <SearchWrapper searchFAQs={faq.searchFAQs || []} />
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <div className="container mx-auto px-4 mb-8" style={{ maxWidth: '1600px' }}>
-        <Link 
-          href="/" 
-          className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors duration-200 group text-sm font-medium"
-        >
-          <svg className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+    <div className="relative max-w-xl mx-auto">
+      {/* Search Input */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          Back to all FAQs
-        </Link>
+        </div>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          className="w-full pl-10 pr-4 py-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition-all duration-200"
+          placeholder="Search other questions..."
+        />
+        {query && (
+          <button
+            onClick={() => {
+              setQuery('');
+              setIsOpen(false);
+            }}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
+            <svg className="h-4 w-4 text-slate-400 hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {/* Main Content Card */}
-      <main className="container mx-auto px-4 pb-16" style={{ maxWidth: '1600px' }}>
-        <article className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden mb-12">
-          {/* Hero Image with Question Overlay */}
-          {faq.image?.asset?.url && (
-            <div className="relative h-80 md:h-96 overflow-hidden">
-              <Image
-                src={faq.image?.asset?.url ? urlFor(faq.image).width(1200).height(600).fit('crop').url() : '/fallback.jpg'}
-                alt={faq.image.alt || faq.question}
-                fill
-                className="object-cover"
-              />
-              
-              {/* Dark gradient overlay for text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              
-              {/* Question overlay */}
-              <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end">
-                <div className="mb-4">
-                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    Question & Answer
-                  </span>
-                </div>
-                <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight max-w-4xl">
-                  {faq.question}
-                </h2>
+      {/* Search Results Dropdown */}
+      {isOpen && query.length >= 2 && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-200 z-50 max-h-80 overflow-y-auto">
+          {searchResults.length > 0 ? (
+            <>
+              {/* Results Header */}
+              <div className="px-4 py-2 border-b border-slate-100">
+                <p className="text-xs font-medium text-slate-700">
+                  Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                </p>
               </div>
+              
+              {/* Results List - with additional safety check */}
+              <div className="py-1">
+                {searchResults
+                  .filter(faq => faq && faq.slug && faq.slug.current && faq.question) // Double safety check
+                  .map((faq) => (
+                  <Link
+                    key={faq._id}
+                    href={`/faqs/${faq.slug.current}`}
+                    className="block px-4 py-2 hover:bg-blue-50 transition-colors duration-150"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setQuery('');
+                    }}
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-100 rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-slate-800 leading-snug mb-1 text-sm">
+                          {highlightText(faq.question, query.trim())}
+                        </h4>
+                        {faq.summaryForAI && (
+                          <p className="text-xs text-slate-600 line-clamp-2">
+                            {highlightText(faq.summaryForAI, query.trim())}
+                          </p>
+                        )}
+                      </div>
+                      <svg className="w-3 h-3 text-blue-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </>
+          ) : (
+            /* No Results */
+            <div className="px-4 py-6 text-center">
+              <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.347 0-4.518.641-6.397 1.759" />
+                </svg>
+              </div>
+              <h4 className="font-medium text-slate-800 mb-1 text-sm">No results found</h4>
+              <p className="text-xs text-slate-600">
+                No FAQs match "{query}"
+              </p>
             </div>
           )}
-
-          {/* Content Section */}
-          <div className="p-8 md:p-12">
-            {/* If no image, show question as heading */}
-            {!faq.image?.asset?.url && (
-              <div className="mb-8">
-                <div className="mb-4">
-                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-700 text-sm font-medium">
-                    <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
-                    Question & Answer
-                  </span>
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-800 leading-tight">
-                  {faq.question}
-                </h2>
-              </div>
-            )}
-
-            {/* Answer Content */}
-            <div className="prose prose-lg prose-slate max-w-none mb-12">
-              <PortableText value={faq.answer} />
-            </div>
-
-            {/* Updated Citation Box with Click-to-Copy */}
-            <CitationBox
-              question={faq.question}
-              url={faqUrl}
-              siteName="Upsum"
-              publishedDate={faq.publishedAt}
-              author={faq.author?.name}
-            />
-          </div>
-        </article>
-
-        {/* Smart Related Questions */}
-        <RelatedFAQs
-          currentFAQ={faq}
-          manualRelatedFAQs={safeManualRelatedFAQs}
-          allFAQs={safeAllFAQs}
-          maxSuggestions={3}
-        />
-      </main>
-
-      {/* Footer with "Powered by Upsum" - New consistent style */}
-      <footer className="bg-blue-50 border-t border-blue-200 py-6">
-        <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
-          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
-            <span>Powered by</span>
-            <Image
-              src="/upsum.png"
-              alt="Upsum"
-              width={60}
-              height={24}
-              className="opacity-70"
-            />
-          </div>
-          <p className="text-xs text-blue-400">
-            Upsum is a trademark of{' '}
-            <a 
-              href="https://harpoon.productions" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-blue-600 transition-colors duration-200"
-            >
-              Harpoon Productions
-            </a>
-          </p>
         </div>
-      </footer>
+      )}
+
+      {/* Click outside to close */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setIsOpen(false)}
+        />
+      )}
     </div>
-  )
+  );
 }
-//repush//

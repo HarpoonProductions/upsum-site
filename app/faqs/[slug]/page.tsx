@@ -316,7 +316,7 @@ export default async function FaqPage({ params }: { params: Promise<{ slug: stri
           
           {/* Search Box */}
           <div className="mb-6">
-            <SearchWrapper searchFAQs={faq.searchFAQs || []} />
+            <FAQPageSearch searchFAQs={faq.searchFAQs || []} />
           </div>
         </div>
       </div>
