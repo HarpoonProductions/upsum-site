@@ -96,7 +96,429 @@ const query = groq`*[_type == "faq" && slug.current == $slug][0] {
   }
 }`
 
-export async function generateMetadata(
+// Citation Box Component (embedded)
+function CitationBox({ question, url, siteName, publishedDate, author }) {
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState(false);
+
+  const generateCitation = () => {
+    const date = publishedDate ? new Date(publishedDate).toLocaleDateString() : new Date().toLocaleDateString();
+    const authorText = author ? `${author}. ` : '';
+    return `${authorText}"${question}." ${siteName}, ${date}. ${url}`;
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } else {
+        return fallbackCopy(text);
+      }
+    } catch (err) {
+      console.error('Clipboard API failed:', err);
+      return fallbackCopy(text);
+    }
+  };
+
+  const fallbackCopy = (text) => {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const result = document.execCommand('copy');
+      textArea.remove();
+      return result;
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      return false;
+    }
+  };
+
+  const handleCopyClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const citationText = generateCitation();
+    const success = await copyToClipboard(citationText);
+    
+    if (success) {
+      setCopied(true);
+      setError(false);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      setError(true);
+      setTimeout(() => setError(false), 3000);
+    }
+  };
+
+  return (
+    <div 
+      className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 hover:bg-gradient-to-r hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 cursor-pointer select-none"
+      onClick={handleCopyClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleCopyClick(e);
+        }
+      }}
+      aria-label="Click to copy citation"
+    >
+      <div className="flex items-start gap-4">
+        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+          {copied ? (
+            <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          ) : error ? (
+            <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          )}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold text-blue-900 text-lg">How to cite this page</h3>
+            <div className="text-xs text-blue-600 font-medium">
+              {copied ? '✓ Copied!' : error ? 'Failed to copy' : 'Click to copy'}
+            </div>
+          </div>
+          <p className="text-sm text-slate-700 leading-relaxed">
+            {generateCitation()}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Related FAQs Component (embedded)
+function RelatedFAQs({ currentFAQ, manualRelatedFAQs = [], allFAQs, maxSuggestions = 3 }) {
+  const [relatedFAQs, setRelatedFAQs] = useState([]);
+
+  useEffect(() => {
+    try {
+      if (!currentFAQ || !currentFAQ.question) {
+        setRelatedFAQs([]);
+        return;
+      }
+
+      if (manualRelatedFAQs && manualRelatedFAQs.length > 0) {
+        const validManualFAQs = manualRelatedFAQs.filter(faq => 
+          faq && 
+          faq.slug && 
+          faq.slug.current && 
+          faq.question
+        );
+        setRelatedFAQs(validManualFAQs.slice(0, maxSuggestions));
+        return;
+      }
+
+      const suggestions = generateAutomaticSuggestions();
+      setRelatedFAQs(suggestions);
+    } catch (error) {
+      console.error('Error in RelatedFAQs useEffect:', error);
+      setRelatedFAQs([]);
+    }
+  }, [currentFAQ, manualRelatedFAQs, allFAQs, maxSuggestions]);
+
+  const generateAutomaticSuggestions = () => {
+    try {
+      if (!currentFAQ || !allFAQs || allFAQs.length === 0) {
+        return [];
+      }
+
+      const currentKeywords = currentFAQ.keywords || [];
+      const currentCategory = currentFAQ.category;
+      
+      const candidateFAQs = allFAQs.filter(faq => {
+        const isValid = faq && 
+          faq._id !== currentFAQ._id && 
+          faq.slug && 
+          faq.slug.current && 
+          faq.question;
+        return isValid;
+      });
+      
+      const scoredFAQs = candidateFAQs.map(faq => ({
+        faq,
+        score: calculateRelevanceScore(faq, currentKeywords, currentCategory)
+      }));
+
+      return scoredFAQs
+        .sort((a, b) => b.score - a.score)
+        .slice(0, maxSuggestions)
+        .map(item => item.faq);
+    } catch (error) {
+      console.error('Error in generateAutomaticSuggestions:', error);
+      return [];
+    }
+  };
+
+  const calculateRelevanceScore = (faq, currentKeywords, currentCategory) => {
+    let score = 0;
+
+    if (currentCategory && faq.category?.slug.current === currentCategory.slug.current) {
+      score += 10;
+    }
+
+    const faqKeywords = faq.keywords || [];
+    const matchingKeywords = currentKeywords.filter(keyword => 
+      faqKeywords.some(faqKeyword => 
+        faqKeyword.toLowerCase().includes(keyword.toLowerCase()) ||
+        keyword.toLowerCase().includes(faqKeyword.toLowerCase())
+      )
+    );
+    score += matchingKeywords.length * 3;
+
+    const currentWords = currentFAQ.question.toLowerCase().split(/\s+/);
+    const faqWords = faq.question.toLowerCase().split(/\s+/);
+    const commonWords = currentWords.filter(word => 
+      word.length > 3 && faqWords.includes(word)
+    );
+    score += commonWords.length;
+
+    return score;
+  };
+
+  if (relatedFAQs.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <div className="text-center mb-12">
+        <h3 className="text-3xl font-bold text-slate-800 mb-4">Related Questions</h3>
+        <p className="text-slate-600 text-lg">Explore more topics that might interest you</p>
+      </div>
+
+      <div className="hidden md:grid md:grid-cols-3 gap-8">
+        {relatedFAQs.filter(faq => faq && faq.slug && faq.slug.current).map((faq) => (
+          <RelatedFAQCard key={faq._id} faq={faq} />
+        ))}
+      </div>
+
+      <div className="md:hidden">
+        <div className="flex space-x-4 overflow-x-auto pb-4" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          {relatedFAQs.filter(faq => faq && faq.slug && faq.slug.current).map((faq) => (
+            <div key={faq._id} className="flex-shrink-0 w-80">
+              <RelatedFAQCard faq={faq} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RelatedFAQCard({ faq }) {
+  if (!faq || !faq.slug || !faq.slug.current || !faq.question) {
+    return null;
+  }
+
+  const imageUrl = faq.image?.asset?.url
+    ? urlFor(faq.image).width(500).height(300).fit('crop').url()
+    : '/fallback.jpg';
+
+  return (
+    <Link
+      href={`/faqs/${faq.slug.current}`}
+      className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden block h-full"
+    >
+      <div className="relative h-64 overflow-hidden">
+        <Image
+          src={imageUrl}
+          alt={faq.question}
+          fill
+          className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        
+        <div className="absolute inset-0 p-6 flex flex-col justify-end">
+          <div className="mb-3">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-medium">
+              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+              Related
+            </span>
+          </div>
+          <h4 className="text-lg font-bold text-white leading-tight group-hover:text-blue-200 transition-colors duration-300">
+            {faq.question}
+          </h4>
+        </div>
+        
+        <div className="absolute top-4 right-4 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <svg className="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </div>
+      </div>
+
+      <div className="p-6 flex-1 flex flex-col">
+        {faq.summaryForAI && (
+          <p className="text-slate-600 leading-relaxed line-clamp-3 mb-4 flex-1">
+            {faq.summaryForAI}
+          </p>
+        )}
+        <div className="flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors duration-200 mt-auto">
+          Read answer
+          <svg className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// Search Component (embedded)
+function FAQPageSearch({ searchFAQs }) {
+  const [query, setQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+
+  const searchResults = useMemo(() => {
+    if (!query.trim() || query.length < 2) return [];
+    
+    const searchTerm = query.toLowerCase();
+    
+    const validFaqs = searchFAQs.filter(faq => 
+      faq && 
+      faq.slug && 
+      faq.slug.current && 
+      faq.question
+    );
+    
+    return validFaqs.filter(faq => 
+      faq.question.toLowerCase().includes(searchTerm) ||
+      faq.summaryForAI?.toLowerCase().includes(searchTerm)
+    ).slice(0, 5);
+  }, [query, searchFAQs]);
+
+  const highlightText = (text, searchTerm) => {
+    if (!searchTerm || !text) return text;
+    
+    const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
+    return parts.map((part, index) => 
+      part.toLowerCase() === searchTerm.toLowerCase() 
+        ? <mark key={index} className="bg-yellow-200 px-1 rounded">{part}</mark>
+        : part
+    );
+  };
+
+  return (
+    <div className="relative max-w-xl mx-auto">
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          className="w-full pl-10 pr-4 py-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition-all duration-200"
+          placeholder="Search other questions..."
+        />
+        {query && (
+          <button
+            onClick={() => {
+              setQuery('');
+              setIsOpen(false);
+            }}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
+            <svg className="h-4 w-4 text-slate-400 hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {isOpen && query.length >= 2 && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-200 z-50 max-h-80 overflow-y-auto">
+          {searchResults.length > 0 ? (
+            <>
+              <div className="px-4 py-2 border-b border-slate-100">
+                <p className="text-xs font-medium text-slate-700">
+                  Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              
+              <div className="py-1">
+                {searchResults
+                  .filter(faq => faq && faq.slug && faq.slug.current && faq.question)
+                  .map((faq) => (
+                  <Link
+                    key={faq._id}
+                    href={`/faqs/${faq.slug.current}`}
+                    className="block px-4 py-2 hover:bg-blue-50 transition-colors duration-150"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setQuery('');
+                    }}
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-100 rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-slate-800 leading-snug mb-1 text-sm">
+                          {highlightText(faq.question, query.trim())}
+                        </h4>
+                        {faq.summaryForAI && (
+                          <p className="text-xs text-slate-600 line-clamp-2">
+                            {highlightText(faq.summaryForAI, query.trim())}
+                          </p>
+                        )}
+                      </div>
+                      <svg className="w-3 h-3 text-blue-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="px-4 py-6 text-center">
+              <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.347 0-4.518.641-6.397 1.759" />
+                </svg>
+              </div>
+              <h4 className="font-medium text-slate-800 mb-1 text-sm">No results found</h4>
+              <p className="text-xs text-slate-600">
+                No FAQs match "{query}"
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
   { params }: { params: Promise<{ slug: string }> },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
