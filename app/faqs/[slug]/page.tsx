@@ -11,9 +11,9 @@ import { urlFor } from '@/lib/sanity'
 import dynamic from 'next/dynamic'
 
 // Dynamically import client components
-const CitationBox = dynamic(() => import('./CitationBox'), { ssr: false })
-const RelatedFAQs = dynamic(() => import('./RelatedFAQs'), { ssr: false })
-const FAQPageSearch = dynamic(() => import('./FAQPageSearch'), { ssr: false })
+const CitationBox = dynamic(() => import('./CitationBox'))
+const RelatedFAQs = dynamic(() => import('./RelatedFAQs'))
+const FAQPageSearch = dynamic(() => import('./FAQPageSearch'))
 
 interface Faq {
   _id: string
