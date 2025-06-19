@@ -1,4 +1,4 @@
-// Updated app/page.tsx - Main Upsum Homepage with Debug Logging
+// Updated app/page.tsx - Main Upsum Homepage with Fixed Search + Suggest Question Modal
 
 'use client'
 
@@ -9,27 +9,8 @@ import Image from 'next/image'
 import { urlFor } from '@/lib/sanity'
 import { useState, useEffect, useMemo } from 'react'
 
-// Type definitions
-interface FAQ {
-  _id: string;
-  question: string;
-  slug: { current: string };
-  summaryForAI?: string;
-  image?: {
-    asset?: {
-      url: string;
-    };
-  };
-}
-
-interface SearchBoxProps {
-  faqs: FAQ[];
-  onSuggestQuestion: (question?: string) => void;
-  theme?: 'blue' | 'orange';
-}
-
-// Search Component
-const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: SearchBoxProps) => {
+// Fixed Search Component with null safety
+const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -54,20 +35,29 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: SearchBoxProps) 
 
   const colors = themeColors[theme];
 
-  // Search logic
+  // Search logic with null safety
   const searchResults = useMemo(() => {
     if (!query.trim() || query.length < 2) return [];
     
     const searchTerm = query.toLowerCase();
-    return faqs.filter(faq => 
-      faq.question?.toLowerCase().includes(searchTerm) ||
-      (faq.summaryForAI && faq.summaryForAI.toLowerCase().includes(searchTerm))
+    
+    // Filter out FAQs with null/invalid slugs BEFORE searching
+    const validFaqs = faqs.filter(faq => 
+      faq && 
+      faq.slug && 
+      faq.slug.current && 
+      faq.question
+    );
+    
+    return validFaqs.filter(faq => 
+      faq.question.toLowerCase().includes(searchTerm) ||
+      faq.summaryForAI?.toLowerCase().includes(searchTerm)
     ).slice(0, 5); // Show max 5 results
   }, [query, faqs]);
 
   // Highlight search terms
-  const highlightText = (text: string, searchTerm: string) => {
-    if (!searchTerm) return text;
+  const highlightText = (text, searchTerm) => {
+    if (!searchTerm || !text) return text;
     
     const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
     return parts.map((part, index) => 
@@ -124,9 +114,11 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: SearchBoxProps) 
                 </p>
               </div>
               
-              {/* Results List */}
+              {/* Results List - with additional safety check */}
               <div className="py-2">
-                {searchResults.map((faq) => (
+                {searchResults
+                  .filter(faq => faq && faq.slug && faq.slug.current && faq.question) // Double safety check
+                  .map((faq) => (
                   <Link
                     key={faq._id}
                     href={`/faqs/${faq.slug.current}`}
@@ -173,7 +165,7 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: SearchBoxProps) 
                   setIsOpen(false);
                   onSuggestQuestion(query);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 text-sm font-medium"
+                className={`inline-flex items-center gap-2 px-4 py-2 bg-${colors.accent}-600 hover:bg-${colors.accent}-700 text-white rounded-lg transition-colors duration-200 text-sm font-medium`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -197,23 +189,7 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: SearchBoxProps) 
 };
 
 // Suggest Question Modal Component
-interface SuggestQuestionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  theme?: 'blue' | 'orange';
-  siteName?: string;
-  siteUrl?: string;
-  prefillQuestion?: string;
-}
-
-const SuggestQuestionModal = ({ 
-  isOpen, 
-  onClose, 
-  theme = 'blue', 
-  siteName = 'Upsum', 
-  siteUrl = 'https://upsum.info', 
-  prefillQuestion = '' 
-}: SuggestQuestionModalProps) => {
+const SuggestQuestionModal = ({ isOpen, onClose, theme = 'blue', siteName = 'Upsum', siteUrl = 'https://upsum.info', prefillQuestion = '' }) => {
   const [formData, setFormData] = useState({
     question: '',
     email: '',
@@ -264,7 +240,7 @@ const SuggestQuestionModal = ({
     return null;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     
     // Check rate limiting
@@ -320,7 +296,7 @@ Timestamp: ${new Date().toISOString()}
     }, 2500);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
@@ -441,7 +417,7 @@ Timestamp: ${new Date().toISOString()}
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={!formData.question.trim() || !formData.email.trim() || isSubmitting || !!rateLimitError}
+                  disabled={!formData.question.trim() || !formData.email.trim() || isSubmitting || rateLimitError}
                   className={`flex-1 px-4 py-2 ${colors.button} text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {isSubmitting ? 'Sending...' : 'Send Suggestion'}
@@ -456,58 +432,53 @@ Timestamp: ${new Date().toISOString()}
 };
 
 export default function HomePage() {
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [faqs, setFaqs] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [prefillQuestion, setPrefillQuestion] = useState('');
 
-  // DEBUG VERSION - useEffect with detailed logging
   useEffect(() => {
-    console.log('🚀 Component mounting, starting fetch...');
-    
     const fetchFaqs = async () => {
-      try {
-        console.log('🔍 Client config:', {
-          projectId: client.config().projectId,
-          dataset: client.config().dataset
-        });
-        
-        // Test the exact query we're using
-        const query = groq`*[_type == "faq" && defined(slug.current)] | order(_createdAt desc)[0...10] {
-          _id,
-          question,
-          slug,
-          summaryForAI,
-          image {
-            asset -> {
-              url
-            }
+      // Updated query with null safety filters
+      const query = groq`*[
+        _type == "faq" && 
+        defined(slug.current) && 
+        defined(question) && 
+        slug.current != null && 
+        question != null
+      ] | order(_createdAt desc)[0...10] {
+        _id,
+        question,
+        slug,
+        summaryForAI,
+        image {
+          asset -> {
+            url
           }
-        }`;
+        }
+      }`;
+      
+      try {
+        const fetchedFaqs = await client.fetch(query);
         
-        console.log('📝 Running query:', query);
+        // Additional client-side safety filter
+        const safeFaqs = fetchedFaqs.filter(faq => 
+          faq && 
+          faq._id && 
+          faq.question && 
+          faq.slug && 
+          faq.slug.current
+        );
         
-        const result = await client.fetch(query);
-        console.log('📊 Raw query result:', result);
-        console.log('📏 Result length:', result.length);
-        console.log('🎯 Setting faqs state with:', result);
-        
-        setFaqs(result);
-        
-        // Check state after setting
-        setTimeout(() => {
-          console.log('⏰ State check - faqs length should be:', result.length);
-        }, 100);
-        
+        console.log('⏰ State check - faqs length should be:', safeFaqs.length);
+        setFaqs(safeFaqs);
       } catch (error) {
-        console.error('❌ Fetch error:', error);
+        console.error('Error fetching FAQs:', error);
+        setFaqs([]); // Set empty array on error
       }
     };
 
     fetchFaqs();
   }, []);
-
-  // Debug: Log what we're rendering with
-  console.log('🎨 Rendering with faqs:', faqs.length, faqs);
 
   const handleSuggestQuestion = (questionText = '') => {
     setPrefillQuestion(questionText);
@@ -644,10 +615,12 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Articles Grid */}
+      {/* Articles Grid - with null safety */}
       <div className="container mx-auto px-4 pb-16" style={{ maxWidth: '1600px' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {faqs.map((faq, index) => {
+          {faqs
+            .filter(faq => faq && faq.slug && faq.slug.current && faq.question) // Safety filter
+            .map((faq, index) => {
             const imageUrl = faq.image?.asset?.url
               ? urlFor(faq.image).width(500).height(300).fit('crop').url()
               : '/fallback.jpg'
@@ -695,7 +668,7 @@ export default function HomePage() {
                     {/* Hover indicator */}
                     <div className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
                       <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </div>
                   </div>
@@ -739,16 +712,19 @@ export default function HomePage() {
           <div className="text-center py-16">
             <div className="w-24 h-24 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
               <svg className="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2M7 16h6M7 8h6v4H7V8z" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-slate-700 mb-2">No FAQs found</h3>
-            <p className="text-slate-500 mb-4">Check back later for new questions and answers!</p>
+            <h3 className="text-xl font-semibold text-slate-800 mb-2">No questions yet</h3>
+            <p className="text-slate-600 mb-6">Be the first to suggest a question!</p>
             <button
               onClick={() => handleSuggestQuestion()}
-              className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium"
             >
-              Be the first to suggest a question →
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Suggest a Question
             </button>
           </div>
         )}
@@ -782,8 +758,8 @@ export default function HomePage() {
       </footer>
 
       {/* Suggest Question Modal */}
-      <SuggestQuestionModal 
-        isOpen={isModalOpen} 
+      <SuggestQuestionModal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         theme="blue"
         siteName="Upsum"
@@ -792,4 +768,5 @@ export default function HomePage() {
       />
     </div>
   )
-}//repush site//
+}
+//repush//
