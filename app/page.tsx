@@ -10,7 +10,11 @@ import { urlFor } from '@/lib/sanity'
 import { useState, useEffect, useMemo } from 'react'
 
 // Fixed Search Component with null safety
-const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }) => {
+const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
+  faqs: any[];
+  onSuggestQuestion: (questionText?: string) => void;
+  theme?: 'blue' | 'orange';
+}) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -56,7 +60,7 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }) => {
   }, [query, faqs]);
 
   // Highlight search terms
-  const highlightText = (text, searchTerm) => {
+  const highlightText = (text: string, searchTerm: string) => {
     if (!searchTerm || !text) return text;
     
     const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
@@ -189,7 +193,14 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }) => {
 };
 
 // Suggest Question Modal Component
-const SuggestQuestionModal = ({ isOpen, onClose, theme = 'blue', siteName = 'Upsum', siteUrl = 'https://upsum.info', prefillQuestion = '' }) => {
+const SuggestQuestionModal = ({ isOpen, onClose, theme = 'blue', siteName = 'Upsum', siteUrl = 'https://upsum.info', prefillQuestion = '' }: {
+  isOpen: boolean;
+  onClose: () => void;
+  theme?: 'blue' | 'orange';
+  siteName?: string;
+  siteUrl?: string;
+  prefillQuestion?: string;
+}) => {
   const [formData, setFormData] = useState({
     question: '',
     email: '',
@@ -240,7 +251,7 @@ const SuggestQuestionModal = ({ isOpen, onClose, theme = 'blue', siteName = 'Ups
     return null;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Check rate limiting
@@ -296,7 +307,7 @@ Timestamp: ${new Date().toISOString()}
     }, 2500);
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
