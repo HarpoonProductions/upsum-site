@@ -34,7 +34,7 @@ interface Faq {
   allFAQs?: Faq[]
 }
 
-// Updated query to include related FAQs data
+// Updated query to include related FAQs data with null checks
 const query = groq`*[_type == "faq" && slug.current == $slug][0] {
   _id,
   question,
@@ -59,7 +59,7 @@ const query = groq`*[_type == "faq" && slug.current == $slug][0] {
     alt
   },
   tags,
-  "manualRelatedFAQs": relatedFAQs[]->{
+  "manualRelatedFAQs": relatedFAQs[defined(slug.current) && defined(question)]->{
     _id,
     question,
     slug,
@@ -73,7 +73,7 @@ const query = groq`*[_type == "faq" && slug.current == $slug][0] {
       asset->{ url }
     }
   },
-  "allFAQs": *[_type == "faq" && _id != ^._id && defined(slug.current)]{
+  "allFAQs": *[_type == "faq" && _id != ^._id && defined(slug.current) && defined(question)]{
     _id,
     question,
     slug,

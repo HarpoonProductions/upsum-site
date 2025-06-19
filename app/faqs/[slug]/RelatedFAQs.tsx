@@ -32,9 +32,15 @@ export default function RelatedFAQs({ currentFAQ, manualRelatedFAQs = [], allFAQ
   const [relatedFAQs, setRelatedFAQs] = useState<FAQ[]>([]);
 
   useEffect(() => {
-    // If manual related FAQs are set, use those
+    // If manual related FAQs are set, use those (with null checks)
     if (manualRelatedFAQs.length > 0) {
-      setRelatedFAQs(manualRelatedFAQs.slice(0, maxSuggestions));
+      const validManualFAQs = manualRelatedFAQs.filter(faq => 
+        faq && 
+        faq.slug && 
+        faq.slug.current && 
+        faq.question
+      );
+      setRelatedFAQs(validManualFAQs.slice(0, maxSuggestions));
       return;
     }
 
@@ -47,8 +53,13 @@ export default function RelatedFAQs({ currentFAQ, manualRelatedFAQs = [], allFAQ
     const currentKeywords = currentFAQ.keywords || [];
     const currentCategory = currentFAQ.category;
     
-    // Filter out current FAQ
-    const candidateFAQs = allFAQs.filter(faq => faq._id !== currentFAQ._id);
+    // Filter out current FAQ and FAQs with invalid slugs
+    const candidateFAQs = allFAQs.filter(faq => 
+      faq._id !== currentFAQ._id && 
+      faq.slug && 
+      faq.slug.current && 
+      faq.question
+    );
     
     // Score FAQs based on relevance
     const scoredFAQs = candidateFAQs.map(faq => ({
@@ -109,7 +120,7 @@ export default function RelatedFAQs({ currentFAQ, manualRelatedFAQs = [], allFAQ
 
       {/* Desktop: 3 cards in a row */}
       <div className="hidden md:grid md:grid-cols-3 gap-8">
-        {relatedFAQs.map((faq) => (
+        {relatedFAQs.filter(faq => faq && faq.slug && faq.slug.current).map((faq) => (
           <RelatedFAQCard key={faq._id} faq={faq} />
         ))}
       </div>
@@ -117,7 +128,7 @@ export default function RelatedFAQs({ currentFAQ, manualRelatedFAQs = [], allFAQ
       {/* Mobile: Horizontal scrolling carousel */}
       <div className="md:hidden">
         <div className="flex space-x-4 overflow-x-auto pb-4" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-          {relatedFAQs.map((faq) => (
+          {relatedFAQs.filter(faq => faq && faq.slug && faq.slug.current).map((faq) => (
             <div key={faq._id} className="flex-shrink-0 w-80">
               <RelatedFAQCard faq={faq} />
             </div>
@@ -129,6 +140,11 @@ export default function RelatedFAQs({ currentFAQ, manualRelatedFAQs = [], allFAQ
 }
 
 function RelatedFAQCard({ faq }: { faq: FAQ }) {
+  // Add safety checks for the faq object
+  if (!faq || !faq.slug || !faq.slug.current || !faq.question) {
+    return null;
+  }
+
   const imageUrl = faq.image?.asset?.url
     ? urlFor(faq.image).width(500).height(300).fit('crop').url()
     : '/fallback.jpg';
