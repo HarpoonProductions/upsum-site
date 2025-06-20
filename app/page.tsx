@@ -428,7 +428,7 @@ Timestamp: ${new Date().toISOString()}
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={!formData.question.trim() || !formData.email.trim() || isSubmitting || rateLimitError}
+                  disabled={!formData.question.trim() || !formData.email.trim() || isSubmitting || !!rateLimitError}
                   className={`flex-1 px-4 py-2 ${colors.button} text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {isSubmitting ? 'Sending...' : 'Send Suggestion'}
