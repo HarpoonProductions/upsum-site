@@ -32,46 +32,105 @@ export default function RelatedFAQs({ currentFAQ, manualRelatedFAQs = [], allFAQ
   const [relatedFAQs, setRelatedFAQs] = useState<FAQ[]>([]);
 
   useEffect(() => {
-    // If manual related FAQs are set, use those (with null checks)
-    if (manualRelatedFAQs.length > 0) {
-      const validManualFAQs = manualRelatedFAQs.filter(faq => 
-        faq && 
-        faq.slug && 
-        faq.slug.current && 
-        faq.question
-      );
-      setRelatedFAQs(validManualFAQs.slice(0, maxSuggestions));
-      return;
-    }
+    try {
+      // Debug logging
+      console.log('RelatedFAQs useEffect triggered');
+      console.log('currentFAQ:', currentFAQ);
+      console.log('manualRelatedFAQs:', manualRelatedFAQs);
+      console.log('allFAQs length:', allFAQs?.length || 0);
 
-    // Otherwise, generate automatic suggestions
-    const suggestions = generateAutomaticSuggestions();
-    setRelatedFAQs(suggestions);
+      // Ensure we have valid data
+      if (!currentFAQ || !currentFAQ.question) {
+        console.log('Invalid currentFAQ, setting empty array');
+        setRelatedFAQs([]);
+        return;
+      }
+
+      // If manual related FAQs are set, use those (with null checks)
+      if (manualRelatedFAQs && manualRelatedFAQs.length > 0) {
+        const validManualFAQs = manualRelatedFAQs.filter(faq => {
+          const isValid = faq && 
+            faq.slug && 
+            faq.slug.current && 
+            faq.question;
+          if (!isValid) {
+            console.log('Filtering out invalid manual FAQ:', faq);
+          }
+          return isValid;
+        });
+        console.log('Using manual FAQs:', validManualFAQs.length);
+        setRelatedFAQs(validManualFAQs.slice(0, maxSuggestions));
+        return;
+      }
+
+      // Otherwise, generate automatic suggestions
+      console.log('Generating automatic suggestions');
+      const suggestions = generateAutomaticSuggestions();
+      console.log('Generated suggestions:', suggestions.length);
+      setRelatedFAQs(suggestions);
+    } catch (error) {
+      console.error('Error in RelatedFAQs useEffect:', error);
+      setRelatedFAQs([]);
+    }
   }, [currentFAQ, manualRelatedFAQs, allFAQs, maxSuggestions]);
 
   const generateAutomaticSuggestions = (): FAQ[] => {
-    const currentKeywords = currentFAQ.keywords || [];
-    const currentCategory = currentFAQ.category;
-    
-    // Filter out current FAQ and FAQs with invalid slugs
-    const candidateFAQs = allFAQs.filter(faq => 
-      faq._id !== currentFAQ._id && 
-      faq.slug && 
-      faq.slug.current && 
-      faq.question
-    );
-    
-    // Score FAQs based on relevance
-    const scoredFAQs = candidateFAQs.map(faq => ({
-      faq,
-      score: calculateRelevanceScore(faq, currentKeywords, currentCategory)
-    }));
+    try {
+      console.log('Starting generateAutomaticSuggestions');
+      
+      if (!currentFAQ || !allFAQs || allFAQs.length === 0) {
+        console.log('No current FAQ or allFAQs data');
+        return [];
+      }
 
-    // Sort by score and return top suggestions
-    return scoredFAQs
-      .sort((a, b) => b.score - a.score)
-      .slice(0, maxSuggestions)
-      .map(item => item.faq);
+      const currentKeywords = currentFAQ.keywords || [];
+      const currentCategory = currentFAQ.category;
+      
+      console.log('Current keywords:', currentKeywords);
+      console.log('Current category:', currentCategory);
+      
+      // Filter out current FAQ and FAQs with invalid slugs
+      const candidateFAQs = allFAQs.filter(faq => {
+        const isValid = faq && 
+          faq._id !== currentFAQ._id && 
+          faq.slug && 
+          faq.slug.current && 
+          faq.question;
+        
+        if (!isValid && faq) {
+          console.log('Filtering out invalid FAQ:', {
+            id: faq._id,
+            hasSlug: !!faq.slug,
+            hasSlugCurrent: !!(faq.slug && faq.slug.current),
+            hasQuestion: !!faq.question
+          });
+        }
+        
+        return isValid;
+      });
+      
+      console.log('Candidate FAQs after filtering:', candidateFAQs.length);
+      
+      // Score FAQs based on relevance
+      const scoredFAQs = candidateFAQs.map(faq => ({
+        faq,
+        score: calculateRelevanceScore(faq, currentKeywords, currentCategory)
+      }));
+
+      console.log('Scored FAQs:', scoredFAQs.map(s => ({ question: s.faq.question, score: s.score })));
+
+      // Sort by score and return top suggestions
+      const result = scoredFAQs
+        .sort((a, b) => b.score - a.score)
+        .slice(0, maxSuggestions)
+        .map(item => item.faq);
+        
+      console.log('Final suggestions:', result.map(f => f.question));
+      return result;
+    } catch (error) {
+      console.error('Error in generateAutomaticSuggestions:', error);
+      return [];
+    }
   };
 
   const calculateRelevanceScore = (
@@ -108,8 +167,11 @@ export default function RelatedFAQs({ currentFAQ, manualRelatedFAQs = [], allFAQ
   };
 
   if (relatedFAQs.length === 0) {
+    console.log('No related FAQs to display');
     return null;
   }
+
+  console.log('Rendering related FAQs:', relatedFAQs.length);
 
   return (
     <section>

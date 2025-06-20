@@ -1,4 +1,4 @@
-// app/faqs/[slug]/FAQPageSearch.tsx - Client component for search on FAQ pages
+// app/faqs/[slug]/FAQPageSearch.tsx - Client component for search on FAQ pages with null safety
 
 'use client'
 
@@ -20,36 +20,74 @@ export default function FAQPageSearch({ searchFAQs }: FAQPageSearchProps) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
-  // Search logic with null safety
+  // Search logic with comprehensive null safety
   const searchResults = useMemo(() => {
-    if (!query.trim() || query.length < 2) return [];
-    
-    const searchTerm = query.toLowerCase();
-    
-    // Filter out FAQs with null/invalid slugs BEFORE searching
-    const validFaqs = searchFAQs.filter(faq => 
-      faq && 
-      faq.slug && 
-      faq.slug.current && 
-      faq.question
-    );
-    
-    return validFaqs.filter(faq => 
-      faq.question.toLowerCase().includes(searchTerm) ||
-      faq.summaryForAI?.toLowerCase().includes(searchTerm)
-    ).slice(0, 5); // Show max 5 results
+    try {
+      if (!query.trim() || query.length < 2) return [];
+      
+      const searchTerm = query.toLowerCase();
+      
+      // Comprehensive safety checks for searchFAQs
+      if (!Array.isArray(searchFAQs)) {
+        console.warn('FAQPageSearch: searchFAQs is not an array:', searchFAQs);
+        return [];
+      }
+      
+      // Filter out FAQs with null/invalid slugs BEFORE searching
+      const validFaqs = searchFAQs.filter((faq: any) => {
+        const isValid = faq && 
+          faq.slug && 
+          faq.slug.current && 
+          faq.question &&
+          typeof faq.slug.current === 'string' &&
+          typeof faq.question === 'string';
+        
+        if (!isValid && faq) {
+          console.log('FAQPageSearch: Filtering out invalid FAQ:', {
+            id: faq._id,
+            hasSlug: !!faq.slug,
+            hasSlugCurrent: !!(faq.slug && faq.slug.current),
+            hasQuestion: !!faq.question,
+            slugCurrentType: faq.slug ? typeof faq.slug.current : 'no slug',
+            questionType: typeof faq.question
+          });
+        }
+        
+        return isValid;
+      });
+      
+      console.log('FAQPageSearch: Valid FAQs for search:', validFaqs.length);
+      
+      return validFaqs.filter((faq: any) => {
+        try {
+          return faq.question.toLowerCase().includes(searchTerm) ||
+            (faq.summaryForAI && faq.summaryForAI.toLowerCase().includes(searchTerm));
+        } catch (error) {
+          console.error('Error filtering FAQ:', error, faq);
+          return false;
+        }
+      }).slice(0, 5); // Show max 5 results
+    } catch (error) {
+      console.error('Error in FAQPageSearch searchResults:', error);
+      return [];
+    }
   }, [query, searchFAQs]);
 
-  // Highlight search terms
+  // Highlight search terms with null safety
   const highlightText = (text: string, searchTerm: string) => {
-    if (!searchTerm || !text) return text;
-    
-    const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
-    return parts.map((part, index) => 
-      part.toLowerCase() === searchTerm.toLowerCase() 
-        ? <mark key={index} className="bg-yellow-200 px-1 rounded">{part}</mark>
-        : part
-    );
+    try {
+      if (!searchTerm || !text || typeof text !== 'string') return text;
+      
+      const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
+      return parts.map((part, index) => 
+        part.toLowerCase() === searchTerm.toLowerCase() 
+          ? <mark key={index} className="bg-yellow-200 px-1 rounded">{part}</mark>
+          : part
+      );
+    } catch (error) {
+      console.error('Error highlighting text:', error);
+      return text;
+    }
   };
 
   return (
@@ -102,35 +140,58 @@ export default function FAQPageSearch({ searchFAQs }: FAQPageSearchProps) {
               {/* Results List - with additional safety check */}
               <div className="py-1">
                 {searchResults
-                  .filter(faq => faq && faq.slug && faq.slug.current && faq.question) // Double safety check
-                  .map((faq) => (
-                  <Link
-                    key={faq._id}
-                    href={`/faqs/${faq.slug.current}`}
-                    className="block px-4 py-2 hover:bg-blue-50 transition-colors duration-150"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setQuery('');
-                    }}
-                  >
-                    <div className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-blue-100 rounded-full mt-2 flex-shrink-0"></div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-medium text-slate-800 leading-snug mb-1 text-sm">
-                          {highlightText(faq.question, query.trim())}
-                        </h4>
-                        {faq.summaryForAI && (
-                          <p className="text-xs text-slate-600 line-clamp-2">
-                            {highlightText(faq.summaryForAI, query.trim())}
-                          </p>
-                        )}
-                      </div>
-                      <svg className="w-3 h-3 text-blue-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </Link>
-                ))}
+                  .filter((faq: any) => {
+                    // Triple safety check before rendering
+                    const isValid = faq && 
+                      faq.slug && 
+                      faq.slug.current && 
+                      faq.question &&
+                      typeof faq.slug.current === 'string' &&
+                      typeof faq.question === 'string';
+                    
+                    if (!isValid) {
+                      console.warn('FAQPageSearch: Filtering out invalid result:', faq);
+                    }
+                    
+                    return isValid;
+                  })
+                  .map((faq: any) => {
+                    try {
+                      return (
+                        <Link
+                          key={faq._id}
+                          href={`/faqs/${faq.slug.current}`}
+                          className="block px-4 py-2 hover:bg-blue-50 transition-colors duration-150"
+                          onClick={() => {
+                            setIsOpen(false);
+                            setQuery('');
+                          }}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 bg-blue-100 rounded-full mt-2 flex-shrink-0"></div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-medium text-slate-800 leading-snug mb-1 text-sm">
+                                {highlightText(faq.question, query.trim())}
+                              </h4>
+                              {faq.summaryForAI && (
+                                <p className="text-xs text-slate-600 line-clamp-2">
+                                  {highlightText(faq.summaryForAI, query.trim())}
+                                </p>
+                              )}
+                            </div>
+                            <svg className="w-3 h-3 text-blue-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </Link>
+                      );
+                    } catch (error) {
+                      console.error('Error rendering search result:', error, faq);
+                      return null;
+                    }
+                  })
+                  .filter(Boolean) // Remove any null results
+                }
               </div>
             </>
           ) : (

@@ -1,4 +1,4 @@
-// app/faqs/[slug]/CitationBox.tsx - Client component for citation copying
+// app/faqs/[slug]/CitationBox.tsx - Client component for citation copying with null safety
 
 'use client'
 
@@ -16,18 +16,29 @@ export default function CitationBox({ question, url, siteName, publishedDate, au
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(false);
 
+  // Safety check for props
+  if (!question || !url || !siteName) {
+    console.warn('CitationBox: Missing required props');
+    return null;
+  }
+
   // Generate citation text
   const generateCitation = () => {
-    const date = publishedDate ? new Date(publishedDate).toLocaleDateString() : new Date().toLocaleDateString();
-    const authorText = author ? `${author}. ` : '';
-    return `${authorText}"${question}." ${siteName}, ${date}. ${url}`;
+    try {
+      const date = publishedDate ? new Date(publishedDate).toLocaleDateString() : new Date().toLocaleDateString();
+      const authorText = author ? `${author}. ` : '';
+      return `${authorText}"${question}." ${siteName}, ${date}. ${url}`;
+    } catch (err) {
+      console.error('Error generating citation:', err);
+      return `"${question}." ${siteName}. ${url}`;
+    }
   };
 
   // Modern clipboard copy with fallback
   const copyToClipboard = async (text: string) => {
     try {
       // Try modern Clipboard API first
-      if (navigator.clipboard && window.isSecureContext) {
+      if (navigator?.clipboard && window?.isSecureContext) {
         await navigator.clipboard.writeText(text);
         return true;
       } else {
@@ -65,15 +76,21 @@ export default function CitationBox({ question, url, siteName, publishedDate, au
     e.preventDefault();
     e.stopPropagation();
     
-    const citationText = generateCitation();
-    const success = await copyToClipboard(citationText);
-    
-    if (success) {
-      setCopied(true);
-      setError(false);
-      // Reset after 2 seconds
-      setTimeout(() => setCopied(false), 2000);
-    } else {
+    try {
+      const citationText = generateCitation();
+      const success = await copyToClipboard(citationText);
+      
+      if (success) {
+        setCopied(true);
+        setError(false);
+        // Reset after 2 seconds
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        setError(true);
+        setTimeout(() => setError(false), 3000);
+      }
+    } catch (err) {
+      console.error('Error in handleCopyClick:', err);
       setError(true);
       setTimeout(() => setError(false), 3000);
     }
