@@ -261,4 +261,3 @@ function RelatedFAQCard({ faq }: { faq: FAQ }) {
     </Link>
   );
 }
-//push push push//
