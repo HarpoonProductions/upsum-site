@@ -46,14 +46,14 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
     const searchTerm = query.toLowerCase();
     
     // Filter out FAQs with null/invalid slugs BEFORE searching
-    const validFaqs = faqs.filter(faq => 
+    const validFaqs = faqs.filter((faq: any) => 
       faq && 
       faq.slug && 
       faq.slug.current && 
       faq.question
     );
     
-    return validFaqs.filter(faq => 
+    return validFaqs.filter((faq: any) => 
       faq.question.toLowerCase().includes(searchTerm) ||
       faq.summaryForAI?.toLowerCase().includes(searchTerm)
     ).slice(0, 5); // Show max 5 results
@@ -121,8 +121,8 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
               {/* Results List - with additional safety check */}
               <div className="py-2">
                 {searchResults
-                  .filter(faq => faq && faq.slug && faq.slug.current && faq.question) // Double safety check
-                  .map((faq) => (
+                  .filter((faq: any) => faq && faq.slug && faq.slug.current && faq.question) // Double safety check
+                  .map((faq: any) => (
                   <Link
                     key={faq._id}
                     href={`/faqs/${faq.slug.current}`}
@@ -472,7 +472,7 @@ export default function HomePage() {
         const fetchedFaqs = await client.fetch(query);
         
         // Additional client-side safety filter
-        const safeFaqs = fetchedFaqs.filter(faq => 
+        const safeFaqs = fetchedFaqs.filter((faq: any) => 
           faq && 
           faq._id && 
           faq.question && 
