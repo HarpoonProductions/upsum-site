@@ -140,8 +140,14 @@ export default function RelatedFAQs({ currentFAQ, manualRelatedFAQs = [], allFAQ
   ): number => {
     let score = 0;
 
-    // Category match (highest weight)
-    if (currentCategory && faq.category?.slug.current === currentCategory.slug.current) {
+    // Category match (highest weight) - Fixed null check
+    if (currentCategory && 
+        currentCategory.slug && 
+        currentCategory.slug.current && 
+        faq.category && 
+        faq.category.slug && 
+        faq.category.slug.current &&
+        faq.category.slug.current === currentCategory.slug.current) {
       score += 10;
     }
 
