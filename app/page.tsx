@@ -566,7 +566,7 @@ export default function HomePage() {
               "@type": "WebSite",
               "@id": "https://upsum.info/#website"
             },
-            "mainEntity": faqs.slice(0, 5).map((faq) => ({
+            "mainEntity": faqs.slice(0, 5).map((faq: any) => ({
               "@type": "Question",
               "name": faq.question,
               "acceptedAnswer": {
