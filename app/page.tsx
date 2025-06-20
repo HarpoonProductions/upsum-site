@@ -15,8 +15,8 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
   onSuggestQuestion: (questionText?: string) => void;
   theme?: 'blue' | 'orange';
 }) => {
-  const [query, setQuery] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState<string>('');
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const themeColors = {
     blue: {
@@ -201,14 +201,18 @@ const SuggestQuestionModal = ({ isOpen, onClose, theme = 'blue', siteName = 'Ups
   siteUrl?: string;
   prefillQuestion?: string;
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    question: string;
+    email: string;
+    context: string;
+  }>({
     question: '',
     email: '',
     context: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [rateLimitError, setRateLimitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [rateLimitError, setRateLimitError] = useState<string>('');
 
   // Pre-fill question when modal opens
   useEffect(() => {
@@ -443,9 +447,9 @@ Timestamp: ${new Date().toISOString()}
 };
 
 export default function HomePage() {
-  const [faqs, setFaqs] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [prefillQuestion, setPrefillQuestion] = useState('');
+  const [faqs, setFaqs] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [prefillQuestion, setPrefillQuestion] = useState<string>('');
 
   useEffect(() => {
     const fetchFaqs = async () => {
@@ -491,7 +495,7 @@ export default function HomePage() {
     fetchFaqs();
   }, []);
 
-  const handleSuggestQuestion = (questionText = '') => {
+  const handleSuggestQuestion = (questionText: string = '') => {
     setPrefillQuestion(questionText);
     setIsModalOpen(true);
   };
@@ -630,8 +634,8 @@ export default function HomePage() {
       <div className="container mx-auto px-4 pb-16" style={{ maxWidth: '1600px' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {faqs
-            .filter(faq => faq && faq.slug && faq.slug.current && faq.question) // Safety filter
-            .map((faq, index) => {
+            .filter((faq: any) => faq && faq.slug && faq.slug.current && faq.question) // Safety filter
+            .map((faq: any, index: number) => {
             const imageUrl = faq.image?.asset?.url
               ? urlFor(faq.image).width(500).height(300).fit('crop').url()
               : '/fallback.jpg'
