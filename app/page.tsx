@@ -1,22 +1,49 @@
-// Updated app/page.tsx - Main Upsum Homepage with Fixed Search + Suggest Question Modal
+// app/page.tsx - Updated Upsum Homepage with Network Integration
 
 'use client'
 
 import groq from 'groq'
 import { client } from '@/lib/sanity'
+import { upfClient, uniClient } from '@/lib/sanity-network'
 import Link from 'next/link'
 import Image from 'next/image'
 import { urlFor } from '@/lib/sanity'
 import { useState, useEffect, useMemo } from 'react'
 
-// Fixed Search Component with null safety
-const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
-  faqs: any[];
-  onSuggestQuestion: (questionText?: string) => void;
-  theme?: 'blue' | 'orange';
-}) => {
-  const [query, setQuery] = useState<string>('');
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+// Type definitions
+interface FAQ {
+  _id: string;
+  question: string;
+  slug: { current: string };
+  summaryForAI?: string;
+  keywords?: string[];
+  category?: { title: string };
+  image?: {
+    asset?: {
+      url: string;
+    };
+    alt?: string;
+  };
+  publishedAt?: string;
+}
+
+interface NetworkFAQ extends FAQ {
+  site: 'upsum' | 'upf' | 'uni';
+  siteUrl: string;
+  siteName: string;
+  themeColor: string;
+}
+
+interface SearchBoxProps {
+  faqs: FAQ[];
+  onSuggestQuestion: (question?: string) => void;
+  theme?: 'blue' | 'orange' | 'purple';
+}
+
+// Search Component - Blue themed for main Upsum
+const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: SearchBoxProps) => {
+  const [query, setQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
 
   const themeColors = {
     blue: {
@@ -34,6 +61,14 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
       text: 'text-orange-600',
       bg: 'bg-orange-50',
       hover: 'hover:bg-orange-50'
+    },
+    purple: {
+      accent: 'purple',
+      ring: 'focus:ring-purple-500',
+      border: 'focus:border-purple-500',
+      text: 'text-purple-600',
+      bg: 'bg-purple-50',
+      hover: 'hover:bg-purple-50'
     }
   };
 
@@ -46,14 +81,14 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
     const searchTerm = query.toLowerCase();
     
     // Filter out FAQs with null/invalid slugs BEFORE searching
-    const validFaqs = faqs.filter((faq: any) => 
+    const validFaqs = faqs.filter(faq => 
       faq && 
       faq.slug && 
       faq.slug.current && 
       faq.question
     );
     
-    return validFaqs.filter((faq: any) => 
+    return validFaqs.filter(faq => 
       faq.question.toLowerCase().includes(searchTerm) ||
       faq.summaryForAI?.toLowerCase().includes(searchTerm)
     ).slice(0, 5); // Show max 5 results
@@ -121,8 +156,8 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
               {/* Results List - with additional safety check */}
               <div className="py-2">
                 {searchResults
-                  .filter((faq: any) => faq && faq.slug && faq.slug.current && faq.question) // Double safety check
-                  .map((faq: any) => (
+                  .filter(faq => faq && faq.slug && faq.slug.current && faq.question) // Double safety check
+                  .map((faq) => (
                   <Link
                     key={faq._id}
                     href={`/faqs/${faq.slug.current}`}
@@ -162,7 +197,7 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
               </div>
               <h4 className="font-medium text-slate-800 mb-2">No results found</h4>
               <p className="text-sm text-slate-600 mb-4">
-                We couldn't find any FAQs matching "{query}"
+                We couldn&apos;t find any FAQs matching &quot;{query}&quot;
               </p>
               <button
                 onClick={() => {
@@ -196,23 +231,19 @@ const SearchBox = ({ faqs, onSuggestQuestion, theme = 'blue' }: {
 const SuggestQuestionModal = ({ isOpen, onClose, theme = 'blue', siteName = 'Upsum', siteUrl = 'https://upsum.info', prefillQuestion = '' }: {
   isOpen: boolean;
   onClose: () => void;
-  theme?: 'blue' | 'orange';
+  theme?: 'blue' | 'orange' | 'purple';
   siteName?: string;
   siteUrl?: string;
   prefillQuestion?: string;
 }) => {
-  const [formData, setFormData] = useState<{
-    question: string;
-    email: string;
-    context: string;
-  }>({
+  const [formData, setFormData] = useState({
     question: '',
     email: '',
     context: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-  const [rateLimitError, setRateLimitError] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [rateLimitError, setRateLimitError] = useState('');
 
   // Pre-fill question when modal opens
   useEffect(() => {
@@ -236,6 +267,12 @@ const SuggestQuestionModal = ({ isOpen, onClose, theme = 'blue', siteName = 'Ups
       border: 'border-orange-200',
       button: 'bg-orange-600 hover:bg-orange-700',
       text: 'text-orange-600'
+    },
+    purple: {
+      bg: 'bg-purple-50',
+      border: 'border-purple-200',
+      button: 'bg-purple-600 hover:bg-purple-700',
+      text: 'text-purple-600'
     }
   };
 
@@ -337,7 +374,7 @@ Timestamp: ${new Date().toISOString()}
             </button>
           </div>
           <p className="text-slate-600 text-sm mt-1">
-            Help us improve by suggesting questions you'd like answered
+            Help us improve by suggesting questions you&apos;d like answered
           </p>
         </div>
 
@@ -351,7 +388,7 @@ Timestamp: ${new Date().toISOString()}
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-slate-800 mb-2">Thank you!</h3>
-              <p className="text-slate-600">Your question suggestion has been sent. We'll review it and may add it to our FAQ collection.</p>
+              <p className="text-slate-600">Your question suggestion has been sent. We&apos;ll review it and may add it to our FAQ collection.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -446,63 +483,211 @@ Timestamp: ${new Date().toISOString()}
   );
 };
 
+// Network FAQ Card Component
+const NetworkFAQCard = ({ faq }: { faq: NetworkFAQ }) => {
+  const imageUrl = faq.image?.asset?.url
+    ? urlFor(faq.image).width(400).height(250).fit('crop').url()
+    : '/fallback.jpg';
+
+  const themeConfig = {
+    upf: {
+      badge: 'From UPF FAQs',
+      badgeColor: 'bg-orange-500/20 text-orange-700 border-orange-200',
+      linkColor: 'text-orange-600 hover:text-orange-700',
+      gradientOverlay: 'from-orange-500/20',
+      badgeIcon: '🥪'
+    },
+    uni: {
+      badge: 'From Going To Uni FAQs',
+      badgeColor: 'bg-purple-500/20 text-purple-700 border-purple-200',
+      linkColor: 'text-purple-600 hover:text-purple-700',
+      gradientOverlay: 'from-purple-500/20',
+      badgeIcon: '🎓'
+    },
+    upsum: {
+      badge: 'From Upsum',
+      badgeColor: 'bg-blue-500/20 text-blue-700 border-blue-200',
+      linkColor: 'text-blue-600 hover:text-blue-700',
+      gradientOverlay: 'from-blue-500/20',
+      badgeIcon: '💡'
+    }
+  };
+
+  const config = themeConfig[faq.site];
+
+  return (
+    <article className="group relative overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+      {/* External Site Badge */}
+      <div className="absolute top-3 left-3 z-10">
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${config.badgeColor}`}>
+          <span>{config.badgeIcon}</span>
+          {config.badge}
+        </span>
+      </div>
+
+      {/* External Link Indicator */}
+      <div className="absolute top-3 right-3 z-10">
+        <div className="w-6 h-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <svg className="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Image and Content */}
+      <a
+        href={`${faq.siteUrl}/faqs/${faq.slug.current}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
+      >
+        {/* Image */}
+        <div className="relative h-48 overflow-hidden">
+          <Image
+            src={imageUrl}
+            alt={faq.image?.alt || faq.question}
+            fill
+            className="object-cover transition-all duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent ${config.gradientOverlay}`} />
+        </div>
+
+        {/* Content */}
+        <div className="p-5">
+          <h3 className="font-semibold text-slate-800 leading-snug mb-2 line-clamp-2 group-hover:text-slate-900 transition-colors duration-200">
+            {faq.question}
+          </h3>
+          
+          {faq.summaryForAI && (
+            <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-4">
+              {faq.summaryForAI}
+            </p>
+          )}
+
+          <div className="flex items-center justify-between">
+            <span className={`inline-flex items-center gap-1 text-sm font-medium ${config.linkColor} transition-colors duration-200`}>
+              Read full answer
+              <svg className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </span>
+            <span className="text-xs text-slate-400">
+              {faq.siteName}
+            </span>
+          </div>
+        </div>
+      </a>
+    </article>
+  );
+};
+
 export default function HomePage() {
-  const [faqs, setFaqs] = useState<any[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [prefillQuestion, setPrefillQuestion] = useState<string>('');
+  const [upsumFaqs, setUpsumFaqs] = useState<FAQ[]>([]);
+  const [networkFaqs, setNetworkFaqs] = useState<NetworkFAQ[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [prefillQuestion, setPrefillQuestion] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFaqs = async () => {
-      // Updated query with null safety filters
-      const query = groq`*[
-        _type == "faq" && 
-        defined(slug.current) && 
-        defined(question) && 
-        slug.current != null && 
-        question != null
-      ] | order(_createdAt desc)[0...10] {
-        _id,
-        question,
-        slug,
-        summaryForAI,
-        image {
-          asset -> {
-            url
-          }
-        }
-      }`;
-      
+    const fetchAllFaqs = async () => {
       try {
-        const fetchedFaqs = await client.fetch(query);
+        // Query for main Upsum FAQs (6 most recent)
+        const upsumQuery = groq`*[
+          _type == "faq" && 
+          defined(slug.current) && 
+          defined(question) && 
+          slug.current != null && 
+          question != null
+        ] | order(_createdAt desc)[0...6] {
+          _id,
+          question,
+          slug,
+          summaryForAI,
+          image {
+            asset -> { url },
+            alt
+          }
+        }`;
         
-        // Additional client-side safety filter
-        const safeFaqs = fetchedFaqs.filter((faq: any) => 
-          faq && 
-          faq._id && 
-          faq.question && 
-          faq.slug && 
-          faq.slug.current
-        );
-        
-        console.log('⏰ State check - faqs length should be:', safeFaqs.length);
-        setFaqs(safeFaqs);
+        // Query for network FAQs (3 from each external site)
+        const networkQuery = groq`*[
+          _type == "faq" && 
+          defined(slug.current) && 
+          defined(question) && 
+          slug.current != null && 
+          question != null
+        ] | order(_createdAt desc)[0...3] {
+          _id,
+          question,
+          slug,
+          summaryForAI,
+          image {
+            asset -> { url },
+            alt
+          },
+          publishedAt
+        }`;
+
+        // Fetch all sites with graceful error handling
+        const [upsumResult, upfResult, uniResult] = await Promise.allSettled([
+          client.fetch(upsumQuery),
+          upfClient.fetch(networkQuery),
+          uniClient.fetch(networkQuery)
+        ]);
+
+        // Process main Upsum FAQs
+        const upsumFaqsData = upsumResult.status === 'fulfilled' ? upsumResult.value : [];
+        setUpsumFaqs(upsumFaqsData.filter((faq: any) => faq && faq._id && faq.question && faq.slug && faq.slug.current));
+
+        // Process network FAQs
+        const networkFaqsData: NetworkFAQ[] = [];
+
+        // Add UPF FAQs if available
+        if (upfResult.status === 'fulfilled' && upfResult.value) {
+          const upfFaqs = upfResult.value.filter((faq: any) => faq && faq._id && faq.question && faq.slug && faq.slug.current)
+            .map((faq: any) => ({
+              ...faq,
+              site: 'upf' as const,
+              siteUrl: 'https://upffaqs.com',
+              siteName: 'UPF FAQs',
+              themeColor: 'orange'
+            }));
+          networkFaqsData.push(...upfFaqs);
+        }
+
+        // Add Uni FAQs if available
+        if (uniResult.status === 'fulfilled' && uniResult.value) {
+          const uniFaqs = uniResult.value.filter((faq: any) => faq && faq._id && faq.question && faq.slug && faq.slug.current)
+            .map((faq: any) => ({
+              ...faq,
+              site: 'uni' as const,
+              siteUrl: 'https://goingtounifaqs.com',
+              siteName: 'Going To Uni FAQs',
+              themeColor: 'purple'
+            }));
+          networkFaqsData.push(...uniFaqs);
+        }
+
+        setNetworkFaqs(networkFaqsData);
+        setLoading(false);
       } catch (error) {
-        console.error('Error fetching FAQs:', error);
-        setFaqs([]); // Set empty array on error
+        console.error('❌ Error fetching FAQs:', error);
+        setLoading(false);
       }
     };
 
-    fetchFaqs();
+    fetchAllFaqs();
   }, []);
 
-  const handleSuggestQuestion = (questionText: string = '') => {
+  const handleSuggestQuestion = (questionText = '') => {
     setPrefillQuestion(questionText);
     setIsModalOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Website and Organization Structured Data */}
+      {/* Enhanced Structured Data for Network Hub */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -511,8 +696,8 @@ export default function HomePage() {
             "@type": "WebSite",
             "@id": "https://upsum.info/#website",
             "url": "https://upsum.info",
-            "name": "Upsum",
-            "description": "Quick answers to your questions through structured Q&A content",
+            "name": "Upsum - The FAQ Network Hub",
+            "description": "Quick answers to your questions through our network of specialized FAQ sites",
             "inLanguage": "en-US",
             "publisher": {
               "@type": "Organization",
@@ -528,6 +713,11 @@ export default function HomePage() {
               "@type": "SearchAction",
               "target": "https://upsum.info/?q={search_term_string}",
               "query-input": "required name=search_term_string"
+            },
+            "isPartOf": {
+              "@type": "WebSite",
+              "name": "Upsum Network",
+              "alternateName": "The Upsum FAQ Network"
             }
           })
         }}
@@ -549,36 +739,21 @@ export default function HomePage() {
             },
             "description": "Quick answers to your questions through structured Q&A content",
             "foundingDate": "2025",
-            "sameAs": []
-          })
-        }}
-      />
-
-      {/* FAQPage Schema for the collection */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            "@id": "https://upsum.info/#faqpage",
-            "url": "https://upsum.info",
-            "name": "Upsum - Quick Answers to Your Questions",
-            "description": "Find answers to frequently asked questions with Upsum's structured Q&A format",
-            "inLanguage": "en-US",
-            "isPartOf": {
-              "@type": "WebSite",
-              "@id": "https://upsum.info/#website"
-            },
-            "mainEntity": faqs.slice(0, 5).map((faq: any) => ({
-              "@type": "Question",
-              "name": faq.question,
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": faq.summaryForAI || "Detailed answer available on the page.",
-                "url": `https://upsum.info/faqs/${faq.slug.current}`
+            "sameAs": [],
+            "owns": [
+              {
+                "@type": "WebSite",
+                "name": "UPF FAQs",
+                "url": "https://upffaqs.com",
+                "description": "Ultra-processed food questions and answers"
+              },
+              {
+                "@type": "WebSite", 
+                "name": "Going To Uni FAQs",
+                "url": "https://goingtounifaqs.com",
+                "description": "University and college questions and answers"
               }
-            }))
+            ]
           })
         }}
       />
@@ -595,14 +770,17 @@ export default function HomePage() {
               className="mx-auto mb-6"
             />
           </Link>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4">
+            The FAQ Network Hub
+          </h1>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto mb-8">
-            Quick answers to your questions
+            Quick answers across our specialized FAQ sites
           </p>
           
           {/* Search Box */}
           <div className="mb-8">
             <SearchBox 
-              faqs={faqs}
+              faqs={upsumFaqs}
               onSuggestQuestion={handleSuggestQuestion}
               theme="blue"
             />
@@ -625,17 +803,22 @@ export default function HomePage() {
             Suggest a Question
           </button>
           <p className="text-slate-500 text-sm mt-3">
-            Can't find what you're looking for? Let us know!
+            Can&apos;t find what you&apos;re looking for? Let us know!
           </p>
         </div>
       </div>
 
-      {/* Articles Grid - with null safety */}
-      <div className="container mx-auto px-4 pb-16" style={{ maxWidth: '1600px' }}>
+      {/* Main Upsum FAQs Section */}
+      <div className="container mx-auto px-4 pb-12" style={{ maxWidth: '1600px' }}>
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Latest from Upsum</h2>
+          <p className="text-slate-600">Our newest questions and answers</p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {faqs
-            .filter((faq: any) => faq && faq.slug && faq.slug.current && faq.question) // Safety filter
-            .map((faq: any, index: number) => {
+          {upsumFaqs
+            .filter(faq => faq && faq.slug && faq.slug.current && faq.question) // Safety filter
+            .map((faq, index) => {
             const imageUrl = faq.image?.asset?.url
               ? urlFor(faq.image).width(500).height(300).fit('crop').url()
               : '/fallback.jpg'
@@ -722,8 +905,8 @@ export default function HomePage() {
           })}
         </div>
 
-        {/* Empty state with suggestion */}
-        {faqs.length === 0 && (
+        {/* Empty state for main FAQs */}
+        {upsumFaqs.length === 0 && !loading && (
           <div className="text-center py-16">
             <div className="w-24 h-24 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
               <svg className="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -744,6 +927,79 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* Network FAQs Section */}
+      {networkFaqs.length > 0 && (
+        <div className="bg-slate-50 py-16">
+          <div className="container mx-auto px-4" style={{ maxWidth: '1600px' }}>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-slate-800 mb-4">Latest from the Upsum Network</h2>
+              <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+                Discover answers from our specialized FAQ sites
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {networkFaqs.map((faq) => (
+                <NetworkFAQCard key={`${faq.site}-${faq._id}`} faq={faq} />
+              ))}
+            </div>
+
+            {/* Network Sites Links */}
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+              <a
+                href="https://upffaqs.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-4 p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 border border-orange-200 hover:border-orange-300"
+              >
+                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl">
+                  🥪
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-800 group-hover:text-orange-600 transition-colors duration-200">
+                    UPF FAQs
+                  </h3>
+                  <p className="text-sm text-slate-600">Ultra-processed food questions</p>
+                </div>
+                <svg className="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+
+              <a
+                href="https://goingtounifaqs.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-4 p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 border border-purple-200 hover:border-purple-300"
+              >
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">
+                  🎓
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-800 group-hover:text-purple-600 transition-colors duration-200">
+                    Going To Uni FAQs
+                  </h3>
+                  <p className="text-sm text-slate-600">University & college questions</p>
+                </div>
+                <svg className="w-5 h-5 text-slate-400 group-hover:text-purple-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading state for network FAQs */}
+      {loading && (
+        <div className="bg-slate-50 py-16">
+          <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
+            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-slate-600">Loading network content...</p>
+          </div>
+        </div>
+      )}
 
       {/* Footer with "Powered by Upsum" */}
       <footer className="bg-blue-50 border-t border-blue-200 py-6">
@@ -784,4 +1040,3 @@ export default function HomePage() {
     </div>
   )
 }
-//repush//
