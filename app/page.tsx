@@ -928,9 +928,6 @@ export default function HomePage() {
         )}
       </div>
 
-// Add this section to your homepage right after the "Latest from Upsum" FAQs grid
-// Insert this between the main FAQ grid and the Network FAQs section
-
         {/* Browse All FAQs Link */}
         <div className="text-center mt-12 mb-16">
           <Link
@@ -955,7 +952,7 @@ export default function HomePage() {
             </svg>
           </Link>
         </div>
-        
+
       {/* Network FAQs Section */}
       {networkFaqs.length > 0 && (
         <div className="bg-slate-50 py-16">
