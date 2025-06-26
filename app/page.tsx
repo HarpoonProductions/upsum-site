@@ -1,4 +1,4 @@
-// app/page.tsx - Updated Upsum Homepage with Network Integration
+// app/page.tsx - Complete Upsum Homepage with Fixed NetworkFAQCard
 
 'use client'
 
@@ -483,37 +483,15 @@ Timestamp: ${new Date().toISOString()}
   );
 };
 
-// Updated NetworkFAQCard component with proper cross-dataset image handling
-// Replace the existing NetworkFAQCard in your homepage
-
-import { upfUrlFor, uniUrlFor, urlFor } from '@/lib/sanity-network'
-
-// Network FAQ Card Component with Fixed Image Handling
+// Network FAQ Card Component - FIXED VERSION
 const NetworkFAQCard = ({ faq }: { faq: NetworkFAQ }) => {
   // Fixed image URL handling for cross-dataset images
   const getImageUrl = () => {
     if (!faq.image?.asset?.url) {
       return '/fallback.jpg';
     }
-
-    try {
-      // Use the appropriate image builder for each site
-      switch (faq.site) {
-        case 'upf':
-          return upfUrlFor(faq.image).width(400).height(250).fit('crop').url();
-        case 'uni':
-          return uniUrlFor(faq.image).width(400).height(250).fit('crop').url();
-        case 'upsum':
-          return urlFor(faq.image).width(400).height(250).fit('crop').url();
-        default:
-          // Fallback to raw URL if site type is unknown
-          return faq.image.asset.url;
-      }
-    } catch (error) {
-      console.error(`Error generating image URL for ${faq.site} site:`, error);
-      // If image transformation fails, use raw URL or fallback
-      return faq.image.asset.url || '/fallback.jpg';
-    }
+    // Use raw URL to avoid cross-dataset issues
+    return faq.image.asset.url;
   };
 
   const imageUrl = getImageUrl();
@@ -572,81 +550,6 @@ const NetworkFAQCard = ({ faq }: { faq: NetworkFAQ }) => {
       >
         {/* Image with Error Handling */}
         <div className="relative h-48 overflow-hidden bg-slate-100">
-          <Image
-            src={imageUrl}
-            alt={faq.image?.alt || faq.question}
-            fill
-            className="object-cover transition-all duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            onError={(e) => {
-              // Fallback if image fails to load
-              const target = e.target as HTMLImageElement;
-              if (target.src !== '/fallback.jpg') {
-                target.src = '/fallback.jpg';
-              }
-            }}
-          />
-          <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent ${config.gradientOverlay}`} />
-        </div>
-
-        {/* Content */}
-        <div className="p-5">
-          <h3 className="font-semibold text-slate-800 leading-snug mb-2 line-clamp-2 group-hover:text-slate-900 transition-colors duration-200">
-            {faq.question}
-          </h3>
-          
-          {faq.summaryForAI && (
-            <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-4">
-              {faq.summaryForAI}
-            </p>
-          )}
-
-          <div className="flex items-center justify-between">
-            <span className={`inline-flex items-center gap-1 text-sm font-medium ${config.linkColor} transition-colors duration-200`}>
-              Read full answer
-              <svg className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </span>
-            <span className="text-xs text-slate-400">
-              {faq.siteName}
-            </span>
-          </div>
-        </div>
-      </a>
-    </article>
-  );
-};
-  const config = themeConfig[faq.site];
-
-  return (
-    <article className="group relative overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-      {/* External Site Badge */}
-      <div className="absolute top-3 left-3 z-10">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${config.badgeColor}`}>
-          <span>{config.badgeIcon}</span>
-          {config.badge}
-        </span>
-      </div>
-
-      {/* External Link Indicator */}
-      <div className="absolute top-3 right-3 z-10">
-        <div className="w-6 h-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-          <svg className="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </div>
-      </div>
-
-      {/* Image and Content */}
-      <a
-        href={`${faq.siteUrl}/faqs/${faq.slug.current}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block"
-      >
-        {/* Image */}
-        <div className="relative h-48 overflow-hidden">
           <Image
             src={imageUrl}
             alt={faq.image?.alt || faq.question}
@@ -1009,29 +912,6 @@ export default function HomePage() {
           })}
         </div>
 
-        {/* Empty state for main FAQs */}
-        {upsumFaqs.length === 0 && !loading && (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2M7 16h6M7 8h6v4H7V8z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-slate-800 mb-2">No questions yet</h3>
-            <p className="text-slate-600 mb-6">Be the first to suggest a question!</p>
-            <button
-              onClick={() => handleSuggestQuestion()}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Suggest a Question
-            </button>
-          </div>
-        )}
-      </div>
-
         {/* Browse All FAQs Link */}
         <div className="text-center mt-12 mb-16">
           <Link
@@ -1056,6 +936,29 @@ export default function HomePage() {
             </svg>
           </Link>
         </div>
+
+        {/* Empty state for main FAQs */}
+        {upsumFaqs.length === 0 && !loading && (
+          <div className="text-center py-16">
+            <div className="w-24 h-24 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg className="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-slate-800 mb-2">No questions yet</h3>
+            <p className="text-slate-600 mb-6">Be the first to suggest a question!</p>
+            <button
+              onClick={() => handleSuggestQuestion()}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Suggest a Question
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Network FAQs Section */}
       {networkFaqs.length > 0 && (
