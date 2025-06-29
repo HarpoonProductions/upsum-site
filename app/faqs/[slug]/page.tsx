@@ -586,8 +586,7 @@ export default function FaqPage({ params }: FaqPageProps) {
       </div>
 
       {/* Navigation - Updated with proper breadcrumbs */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-8" style={{ maxWidth: '1600px' }}>
-        <div className="flex items-center gap-4 text-sm">
+<div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-8" style={{ maxWidth: '1600px' }}>        <div className="flex items-center gap-4 text-sm">
           <Link 
             href="/" 
             className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors duration-200 group font-medium"
@@ -800,8 +799,7 @@ export default function FaqPage({ params }: FaqPageProps) {
 
       {/* Footer with "Powered by Upsum" - Now sticky to bottom */}
       <footer className="bg-blue-50 border-t border-blue-200 py-6 mt-auto">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center" style={{ maxWidth: '1600px' }}>
-          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
+<div className="mx-auto px-4 sm:px-6 lg:px-8 text-center" style={{ maxWidth: '1600px' }}>          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
             <span>Powered by</span>
             <Image
               src="/upsum.png"

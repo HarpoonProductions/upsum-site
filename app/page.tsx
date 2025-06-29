@@ -963,7 +963,7 @@ export default function HomePage() {
       {/* Network FAQs Section */}
       {networkFaqs.length > 0 && (
         <div className="bg-slate-50 py-16">
-          <div className="container mx-auto px-4" style={{ maxWidth: '1600px' }}>
+          <div className="mx-auto px-4" style={{ maxWidth: '1600px' }}>
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-slate-800 mb-4">Latest from the Upsum Network</h2>
               <p className="text-slate-600 text-lg max-w-2xl mx-auto">
@@ -1026,8 +1026,7 @@ export default function HomePage() {
       {/* Loading state for network FAQs */}
       {loading && (
         <div className="bg-slate-50 py-16">
-          <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
-            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<div className="mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-slate-600">Loading network content...</p>
           </div>
         </div>
@@ -1035,8 +1034,7 @@ export default function HomePage() {
 
       {/* Footer with "Powered by Upsum" */}
       <footer className="bg-blue-50 border-t border-blue-200 py-6">
-        <div className="container mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
-          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
+<div className="mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
             <span>Powered by</span>
             <Image
               src="/upsum.png"
