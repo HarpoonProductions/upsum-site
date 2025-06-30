@@ -1,4 +1,4 @@
-// app/page.tsx - Complete Upsum Homepage with Fixed NetworkFAQCard
+// app/page.tsx - Complete Upsum Homepage with FIXED LAYOUT
 
 'use client'
 
@@ -767,7 +767,7 @@ export default function HomePage() {
 
       {/* Header Section with Search and Suggest Question */}
       <div className="pt-16 pb-12 px-4">
-        <div className="container mx-auto text-center" style={{ maxWidth: '1600px' }}>
+        <div className="mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
           <Link href="/" className="inline-block">
             <Image
               src="/upsum.png"
@@ -816,7 +816,7 @@ export default function HomePage() {
       </div>
 
       {/* Main Upsum FAQs Section */}
-      <div className="container mx-auto px-4 pb-12" style={{ maxWidth: '1600px' }}>
+      <div className="mx-auto px-4 pb-12" style={{ maxWidth: '1600px' }}>
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-slate-800 mb-2">Latest from Upsum</h2>
           <p className="text-slate-600">Our newest questions and answers</p>
@@ -1026,7 +1026,8 @@ export default function HomePage() {
       {/* Loading state for network FAQs */}
       {loading && (
         <div className="bg-slate-50 py-16">
-<div className="mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
+            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-slate-600">Loading network content...</p>
           </div>
         </div>
@@ -1034,7 +1035,8 @@ export default function HomePage() {
 
       {/* Footer with "Powered by Upsum" */}
       <footer className="bg-blue-50 border-t border-blue-200 py-6">
-<div className="mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
+        <div className="mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
+          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-2">
             <span>Powered by</span>
             <Image
               src="/upsum.png"
