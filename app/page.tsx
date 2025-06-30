@@ -767,7 +767,7 @@ export default function HomePage() {
 
       {/* Header Section with Search and Suggest Question */}
       <div className="pt-16 pb-12 px-4">
-        <div className="mx-auto px-4 text-center" style={{ maxWidth: '1600px' }}>
+        <div className="mx-auto text-center" style={{ maxWidth: '1600px' }}>
           <Link href="/" className="inline-block">
             <Image
               src="/upsum.png"
@@ -1072,3 +1072,5 @@ export default function HomePage() {
     </div>
   )
 }
+//push
+
