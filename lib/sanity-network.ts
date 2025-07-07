@@ -12,12 +12,12 @@ export const client = createClient({
   apiVersion: '2024-06-01',
 })
 
-// UPF FAQs client
+// UPF FAQs client - NEW STANDALONE PROJECT
 export const upfClient = createClient({
-  projectId: 'rpufi5bg',
-  dataset: 'upf-foods',
+  projectId: 'shxuue68',  // ✅ New standalone project
+  dataset: 'production',  // ✅ New dataset
   useCdn: true,
-  apiVersion: '2024-06-01',
+  apiVersion: '2023-05-03', // ✅ Match the API version from UPF-FAQs
 })
 
 // Going To Uni FAQs client  
