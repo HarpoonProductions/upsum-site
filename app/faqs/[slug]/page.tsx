@@ -1,4 +1,4 @@
-// app/faqs/[slug]/page.tsx - Complete Upsum Individual FAQ page with FIXED LAYOUT
+// app/faqs/[slug]/page.tsx - FIXED VERSION with consistent image handling
 
 'use client'
 
@@ -23,7 +23,7 @@ interface Author {
     website?: string
   }
   image?: {
-    asset: { url: string }
+    asset?: { url: string }
     alt?: string
   }
 }
@@ -48,7 +48,7 @@ interface Faq {
   updatedAt?: string
   author: Author
   image?: {
-    asset: { url: string }
+    asset?: { url: string }
     alt?: string
     caption?: string
   }
@@ -64,7 +64,7 @@ interface SiteSettings {
   description: string
   url: string
   logo?: {
-    asset: { url: string }
+    asset?: { url: string }
     alt?: string
   }
   organization: {
@@ -84,7 +84,7 @@ interface SiteSettings {
   }
 }
 
-// Enhanced queries with all the data needed for gold-standard schema
+// FIXED: Enhanced queries with proper image asset references
 const faqQuery = groq`*[_type == "faq" && slug.current == $slug][0] {
   _id,
   question,
@@ -103,7 +103,14 @@ const faqQuery = groq`*[_type == "faq" && slug.current == $slug][0] {
     question,
     slug,
     summaryForAI,
-    image,
+    image {
+      asset->{
+        _id,
+        url
+      },
+      alt,
+      caption
+    },
     category->{
       title,
       slug
@@ -118,9 +125,22 @@ const faqQuery = groq`*[_type == "faq" && slug.current == $slug][0] {
     jobTitle,
     expertise,
     socialMedia,
-    image
+    image {
+      asset->{
+        _id,
+        url
+      },
+      alt
+    }
   },
-  image,
+  image {
+    asset->{
+      _id,
+      url
+    },
+    alt,
+    caption
+  },
   seo,
   customSchemaMarkup
 }`
@@ -129,7 +149,13 @@ const siteSettingsQuery = groq`*[_type == "siteSettings"][0] {
   title,
   description,
   url,
-  logo,
+  logo {
+    asset->{
+      _id,
+      url
+    },
+    alt
+  },
   organization,
   socialMedia,
   searchAction
@@ -141,7 +167,12 @@ const relatedQuery = groq`*[_type == "faq" && _id != $currentId && (category._re
   slug,
   summaryForAI,
   image {
-    asset->{ url }
+    asset->{
+      _id,
+      url
+    },
+    alt,
+    caption
   },
   category->{
     title,
@@ -156,6 +187,29 @@ const searchFAQsQuery = groq`*[_type == "faq" && defined(slug.current) && define
   slug,
   summaryForAI
 }`
+
+// FIXED: Universal image URL function that works across all sites
+const getImageUrl = (image: any, width?: number, height?: number, fallback = '/fallback.jpg') => {
+  // Check if we have image data
+  if (!image?.asset?.url) {
+    return fallback;
+  }
+
+  // Try urlFor transformation first
+  try {
+    if (width && height) {
+      return urlFor(image).width(width).height(height).fit('crop').url();
+    } else if (width) {
+      return urlFor(image).width(width).url();
+    } else {
+      return urlFor(image).url();
+    }
+  } catch (error) {
+    console.warn('urlFor failed, using raw URL:', error);
+    // Fallback to raw URL if urlFor fails
+    return image.asset.url;
+  }
+};
 
 // Search Component - Blue themed for Upsum
 interface SearchFAQ {
@@ -610,14 +664,18 @@ export default function FaqPage({ params }: FaqPageProps) {
       {/* Main Content - Flex grow to push footer down */}
       <main className="flex-grow mx-auto px-4 sm:px-6 lg:px-8 pb-16" style={{ maxWidth: '1600px' }}>
         <article className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden mb-12">
-          {/* Hero Image with Question Overlay */}
+          {/* FIXED: Hero Image with Question Overlay */}
           {faq.image?.asset?.url && (
             <div className="relative h-80 md:h-96 overflow-hidden">
               <Image
-                src={urlFor(faq.image).width(1200).height(600).fit('crop').url()}
+                src={getImageUrl(faq.image, 1200, 600)}
                 alt={faq.image.alt || faq.question}
                 fill
                 className="object-cover"
+                onError={(e) => {
+                  console.error('Main image failed to load');
+                  // Could add fallback logic here
+                }}
               />
               
               {/* Dark gradient overlay for text readability */}
@@ -655,17 +713,20 @@ export default function FaqPage({ params }: FaqPageProps) {
               </div>
             )}
 
-            {/* Author and Metadata */}
+            {/* FIXED: Author and Metadata */}
             {faq.author && (
               <div className="flex items-center gap-4 text-sm text-slate-600 mb-6">
                 <div className="flex items-center gap-2">
-                  {faq.author.image && (
+                  {faq.author.image?.asset?.url && (
                     <Image
-                      src={urlFor(faq.author.image).width(32).height(32).url()}
+                      src={getImageUrl(faq.author.image, 32, 32)}
                       alt={faq.author.name}
                       width={32}
                       height={32}
                       className="rounded-full"
+                      onError={(e) => {
+                        console.error('Author image failed to load');
+                      }}
                     />
                   )}
                   <span>By {faq.author.name}</span>
@@ -723,7 +784,7 @@ export default function FaqPage({ params }: FaqPageProps) {
           </div>
         </article>
 
-        {/* Related Questions - Enhanced with better related logic */}
+        {/* FIXED: Related Questions - Enhanced with better related logic */}
         {relatedFaqs?.length > 0 && (
           <section>
             <div className="text-center mb-12">
@@ -733,9 +794,7 @@ export default function FaqPage({ params }: FaqPageProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
               {relatedFaqs.map((related) => {
-                const imageUrl = related.image?.asset?.url
-                  ? urlFor(related.image).width(500).height(300).fit('crop').url()
-                  : '/fallback.jpg'
+                const imageUrl = getImageUrl(related.image, 500, 300);
 
                 return (
                   <Link
@@ -750,6 +809,9 @@ export default function FaqPage({ params }: FaqPageProps) {
                         alt={related.question}
                         fill
                         className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
+                        onError={(e) => {
+                          console.error('Related FAQ image failed to load');
+                        }}
                       />
                       
                       {/* Dark gradient overlay */}
